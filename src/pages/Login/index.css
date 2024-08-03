@@ -1,0 +1,12 @@
+.background {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    background-image: url('https://framerusercontent.com/images/qu4gGPCvt5DXqf0zwQ3JkMfY02A.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
