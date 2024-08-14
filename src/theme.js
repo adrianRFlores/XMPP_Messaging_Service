@@ -79,7 +79,8 @@ export const colorTokens = {
         fontSize: 12,
         h1: {
           fontFamily: ["Montserrat", "sans-serif"].join(","),
-          fontSize: 40,
+          fontSize: "2.5rem",
+          fontWeight: "600",
         },
         h2: {
           fontFamily: ["Montserrat", "sans-serif"].join(","),

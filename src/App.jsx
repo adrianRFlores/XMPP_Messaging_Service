@@ -2,15 +2,17 @@ import { useMemo } from 'react'
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 //import HomePage from "scenes/homePage";
 import Login from "./pages/Login";
-import { useSelector } from "react-redux";
+import { Provider, useSelector } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
 import './App.css';
 
+// Almost all UI elements and Form Functionality was taken from 
+
 function App() {
   const theme = useMemo(() => createTheme(themeSettings('dark')), ['dark']);
-  const isAuth = Boolean(useSelector((state) => state.token));
+  const { authenticated, error } = useSelector(state => state.xmpp || {});
 
   return (
       <div className="app">
@@ -19,7 +21,7 @@ function App() {
             <CssBaseline />
             <Routes>
               <Route path='/' element={<Login />} />
-              {/*<Route path='/home' element={isAuth ? <Home /> : <Navigate to="/" />} />*/}
+              <Route path='/home' element={authenticated ? <Home /> : <Navigate to="/" />} />
             </Routes>
           </ThemeProvider>
         </BrowserRouter>

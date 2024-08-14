@@ -14,12 +14,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { connectXmpp, disconnectXmpp } from '../../redux/actions';
 
 const loginSchema = yup.object().shape({
-    username: yup.string().required("Required"),
+    address: yup.string().email("Invalid address").required("Required"),
     password: yup.string().required("Required"),
 });
 
 const initialValuesLogin = {
-    username: "",
+    address: "",
     password: "",
 };
 
@@ -40,7 +40,7 @@ const Form = () => {
       console.log(values)
 
       const credentials = {
-		username: values.username,
+		username: values.address,
 		password: values.password,
 		domain: 'alumchat.lol',
 		websocketURL: 'ws://alumchat.lol:7070/ws/'
@@ -81,13 +81,13 @@ const Form = () => {
               >
     
                 <TextField
-                  label="XMPP username"
+                  label="XMPP Address"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.username}
-                  name="username"
-                  error={Boolean(touched.username) && Boolean(errors.username)}
-                  helperText={touched.username && errors.username}
+                  value={values.address}
+                  name="address"
+                  error={Boolean(touched.address) && Boolean(errors.address)}
+                  helperText={touched.address && errors.address}
                   sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
