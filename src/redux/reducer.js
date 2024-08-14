@@ -3,15 +3,21 @@ import {
     XMPP_DISCONNECTED,
     XMPP_ERROR,
     LOGIN_SUCCESS,
-    LOGIN_FAILURE,
-    RECEIVE_MESSAGE,
+    SET_USER_DETAILS,
+    SET_ROSTER
 } from './actions';
 
 const initialState = {
     connected: false,
     authenticated: false,
     error: null,
-    messages: [],
+    userDetails: {
+        username: "",
+        profilePic: "",
+        status: "",
+        presenceMsg: ""
+    },
+    roster: []
 };
 
 const xmppReducer = (state = initialState, action) => {
@@ -24,10 +30,10 @@ const xmppReducer = (state = initialState, action) => {
             return { ...state, error: action.payload };
         case LOGIN_SUCCESS:
             return { ...state, connected: true, authenticated: true, error: null };
-        case LOGIN_FAILURE:
-            return { ...state, authenticated: false, error: action.payload };
-        case RECEIVE_MESSAGE:
-            return { ...state, messages: [...state.messages, action.payload] };
+        case SET_USER_DETAILS:
+            return { ...state, userDetails: action.payload };
+        case SET_ROSTER:
+            return { ...state, roster: action.payload};
         default:
             return state;
     }

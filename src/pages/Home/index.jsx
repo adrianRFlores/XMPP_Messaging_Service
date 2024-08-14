@@ -1,30 +1,28 @@
 import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
-import Form from "./Form";
+import Sidebar from "../../components/Sidebar";
 import './index.css';
 
-const Login = () => {
-  const theme = useTheme();
+const Home = () => {
   return (
     <div className="background">
+
       <Box
-        width="30%"
+        width="75%"
+        height="80%"
+        display="grid"
         backgroundColor="rgba(255, 255, 255, 0.05)"
         borderRadius="10px"
         sx={{backdropFilter: 'blur(12px)'}}
         boxShadow="0 4px 8px rgba(0, 0, 0, 0.15)"
         border="1px solid rgba(255, 255, 255, 0.1)"
-        p="1rem 6%"
         textAlign="center"
+        gridTemplateColumns="1fr 3fr"
       >
-        <Typography fontWeight="600" fontSize="2.5rem" color="primary" p="0 0 1.5rem 0">
-            Gajimbo
-        </Typography>
-
-        <Form />
-
+        <Sidebar />
+        {/*<ChatContent />*/}
       </Box>
     </div>
   );
 };
 
-export default Login;
+export default Home;

@@ -6,7 +6,8 @@ import {
     xmppConnected,
     xmppDisconnected,
     xmppError,
-    receiveMessage,
+    setUserDetails,
+    setRoster
 } from './actions';
 
 const xmppMiddleware = store => next => action => {
@@ -18,14 +19,28 @@ const xmppMiddleware = store => next => action => {
                 domain: domain,
                 username: username,
                 password: password,
+                resource: 'gajimbo'
             });
 
-            debug(clientObj, true);
-
-            clientObj.on('online', async () => {
-                console.log('hello')
+            clientObj.on('online', async (address) => {
                 store.dispatch(xmppConnected());
+
                 await clientObj.send(xml("presence"));
+
+                let iq = xml('iq', { type: 'get', id: 'v1', to: 'a2645173@alumchat.lol'}, xml('vCard', 'vcard-temp'));
+
+                await clientObj.send(iq);
+
+                iq = xml(
+                    'iq',
+                    { type: 'get', id: 'roster1' },
+                    xml('query', { xmlns: 'jabber:iq:roster' })
+                );
+                
+                clientObj.send(iq);
+
+                console.log(test)
+
             });
 
             clientObj.on('offline', () => {
@@ -42,9 +57,29 @@ const xmppMiddleware = store => next => action => {
             });
 
             clientObj.on('stanza', (stanza) => {
-                if (stanza.is('message')) {
-                    store.dispatch(receiveMessage(stanza.toString()));
+                console.log('on stanza')
+                console.log(stanza)
+                if (stanza.is('iq') && stanza.getChild('query', 'jabber:iq:roster')) {
+                    const query = stanza.getChild('query');
+                    const items = query.getChildren('item');
+                    const contacts = items.map(item => ({
+                        jid: item.attrs.jid,
+                        name: item.attrs.name,
+                        subscription: item.attrs.subscription
+                    }));
+
+                    store.dispatch(setRoster(contacts))
                 }
+
+                if (stanza.is('iq') && stanza.getChild('vCard')) {
+                    const vCard = stanza.getChild('vCard');
+                    const profilePicture = vCard.getChildText('PHOTO') 
+                        ? vCard.getChild('PHOTO').getChildText('BINVAL') 
+                        : null;
+
+                    store.dispatch(setUserDetails({username: clientObj.jid._local, profilePic: profilePicture, status: "", presenceMsg: "hola"}))
+                }
+
             });
 
             clientObj.start().catch(console.error);

@@ -81,7 +81,7 @@ const Form = () => {
               >
     
                 <TextField
-                  label="XMPP username"
+                  label="XMPP Username"
                   onBlur={handleBlur}
                   onChange={handleChange}
                   value={values.username}
@@ -102,7 +102,7 @@ const Form = () => {
                   sx={{ gridColumn: "span 4" }}
                 />
               </Box>
-			  {error && <Box>Login failed: {error.message}</Box>}
+			        {error && <Box>Login failed: {error.message}</Box>}
     
               {/* BUTTONS */}
               <Box>
