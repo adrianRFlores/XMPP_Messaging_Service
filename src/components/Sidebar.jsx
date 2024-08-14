@@ -1,10 +1,17 @@
 import { Box, Typography, useTheme, useMediaQuery, Avatar } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { StyledBadge } from "./StyledBadge";
+import { userChatHistory } from '../redux/actions';
 import Options from "./Options";
 
 const Sidebar = () => {
     const roster = useSelector(state => state.xmpp.roster);
+    const dispatch = useDispatch();
+
+    const handleUserClick = (user) => {
+        dispatch(userChatHistory(user));
+    }
+
     return (
         <Box
             display="grid"
@@ -19,6 +26,7 @@ const Sidebar = () => {
                         display='flex'
                         flexDirection="row"
                         alignItems="center"
+                        onClick={() => {handleUserClick(user.jid)}}
                     >
                         <Box width="fit-content" p="0.5rem">
                             <StyledBadge overlap='circular' anchorOrigin={{vertical: 'bottom', horizontal: 'left'}} variant='dot'>

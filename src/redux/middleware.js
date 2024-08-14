@@ -3,18 +3,22 @@ import debug from '@xmpp/debug'
 import {
     CONNECT_XMPP,
     DISCONNECT_XMPP,
+    USER_CHAT_HISTORY,
     xmppConnected,
     xmppDisconnected,
     xmppError,
     setUserDetails,
-    setRoster
+    setRoster,
 } from './actions';
 
+let clientObj;
+
 const xmppMiddleware = store => next => action => {
+
     switch (action.type) {
         case CONNECT_XMPP:
             const { username, password, domain, websocketURL } = action.payload;
-            const clientObj = client({
+            clientObj = client({
                 service: websocketURL,
                 domain: domain,
                 username: username,
@@ -86,10 +90,26 @@ const xmppMiddleware = store => next => action => {
 
             break;
         case DISCONNECT_XMPP:
-            if (client) {
-                client.stop();
+            if (clientObj) {
+                clientObj.stop();
             }
             break;
+        
+        case USER_CHAT_HISTORY:
+
+            let iq = xml('iq', { type: 'set', id: 'mamReq' }, 
+                xml('query', { xmlns: 'urn:xmpp:mam:2' }, 
+                    xml('x', { xmlns: 'jabber:x:data', type: 'submit' }, 
+                        xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'urn:xmpp:mam:2')),
+                        xml('field', { var: 'with' }, xml('value', {}, action.payload)),
+                    )
+                )
+            )
+
+            clientObj.send(iq);
+
+            break;
+
         default:
             break;
     }

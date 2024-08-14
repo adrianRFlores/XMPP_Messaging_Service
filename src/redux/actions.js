@@ -7,6 +7,7 @@ export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAILURE = 'LOGIN_FAILURE';
 export const SET_USER_DETAILS = 'SET_USER_DETAILS';
 export const SET_ROSTER = 'SET_ROSTER';
+export const USER_CHAT_HISTORY = 'USER_CHAT_HISTORY'
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -47,4 +48,9 @@ export const setUserDetails = (userDetails) => ({
 export const setRoster = (roster) => ({
     type: SET_ROSTER,
     payload: roster
+})
+
+export const userChatHistory = (jid) => ({
+    type: USER_CHAT_HISTORY,
+    payload: jid
 })
