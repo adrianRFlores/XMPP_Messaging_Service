@@ -3,12 +3,12 @@ import debug from '@xmpp/debug'
 import {
     CONNECT_XMPP,
     DISCONNECT_XMPP,
-    USER_CHAT_HISTORY,
     xmppConnected,
     xmppDisconnected,
     xmppError,
     setUserDetails,
     setRoster,
+    addMsg
 } from './actions';
 
 let clientObj;
@@ -41,9 +41,12 @@ const xmppMiddleware = store => next => action => {
                     xml('query', { xmlns: 'jabber:iq:roster' })
                 );
                 
-                clientObj.send(iq);
+                await clientObj.send(iq);
 
-                console.log(test)
+                iq = xml('iq', { type: 'set', id: 'mamReq' }, 
+                xml('query', { xmlns: 'urn:xmpp:mam:2', queryid: 'f27' }));
+
+                await clientObj.send(iq);
 
             });
 
@@ -61,8 +64,20 @@ const xmppMiddleware = store => next => action => {
             });
 
             clientObj.on('stanza', (stanza) => {
-                console.log('on stanza')
+                
+                console.log('stanza')
                 console.log(stanza)
+
+                if (stanza.is('message')) {
+                    let message = {
+                        to: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('to'),
+                        from: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('from').split('/')[0],
+                        timestamp: stanza.getChild('result').getChild('forwarded').getChild('delay').getAttr('stamp'),
+                        content: stanza.getChild('result').getChild('forwarded').getChild('message').getChild('body').getText()
+                    }
+                    store.dispatch(addMsg(message))
+                }
+
                 if (stanza.is('iq') && stanza.getChild('query', 'jabber:iq:roster')) {
                     const query = stanza.getChild('query');
                     const items = query.getChildren('item');
@@ -93,21 +108,6 @@ const xmppMiddleware = store => next => action => {
             if (clientObj) {
                 clientObj.stop();
             }
-            break;
-        
-        case USER_CHAT_HISTORY:
-
-            let iq = xml('iq', { type: 'set', id: 'mamReq' }, 
-                xml('query', { xmlns: 'urn:xmpp:mam:2' }, 
-                    xml('x', { xmlns: 'jabber:x:data', type: 'submit' }, 
-                        xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'urn:xmpp:mam:2')),
-                        xml('field', { var: 'with' }, xml('value', {}, action.payload)),
-                    )
-                )
-            )
-
-            clientObj.send(iq);
-
             break;
 
         default:

@@ -4,7 +4,8 @@ import {
     XMPP_ERROR,
     LOGIN_SUCCESS,
     SET_USER_DETAILS,
-    SET_ROSTER
+    SET_ROSTER,
+    ADD_MSG
 } from './actions';
 
 const initialState = {
@@ -17,7 +18,8 @@ const initialState = {
         status: "",
         presenceMsg: ""
     },
-    roster: []
+    roster: [],
+    messages: []
 };
 
 const xmppReducer = (state = initialState, action) => {
@@ -34,6 +36,10 @@ const xmppReducer = (state = initialState, action) => {
             return { ...state, userDetails: action.payload };
         case SET_ROSTER:
             return { ...state, roster: action.payload};
+        case ADD_MSG:
+            console.log(state.messages);
+            console.log([...state.messages, action.payload])
+            return { ...state, messages: [...state.messages, action.payload] };
         default:
             return state;
     }

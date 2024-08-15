@@ -40,10 +40,10 @@ const Form = () => {
       console.log(values)
 
       const credentials = {
-		username: values.username,
-		password: values.password,
-		domain: 'alumchat.lol',
-		websocketURL: 'ws://alumchat.lol:7070/ws/'
+        username: values.username,
+        password: values.password,
+        domain: 'alumchat.lol',
+        websocketURL: 'ws://alumchat.lol:7070/ws/'
       }
 
       dispatch(connectXmpp(credentials));

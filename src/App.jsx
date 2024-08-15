@@ -8,7 +8,6 @@ import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
 import './App.css';
 
-// Almost all UI elements and Form Functionality was taken from 
 
 function App() {
   const theme = useMemo(() => createTheme(themeSettings('dark')), ['dark']);

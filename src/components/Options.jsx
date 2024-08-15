@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 
 const Options = () => {
     const userDetails = useSelector(state => state.xmpp.userDetails);
-    console.log(userDetails.profilePic)
+    //console.log(userDetails.profilePic)
     return (
         <Box borderTop="1px solid rgba(255, 255, 255, 0.1)" display="flex" flexDirection="row" justifyContent="space-between">
             <Box display="flex"alignItems="center">
