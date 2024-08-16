@@ -8,7 +8,9 @@ import {
     xmppError,
     setUserDetails,
     setRoster,
-    addMsg
+    addMsg,
+    XMPP_UNREGISTER,
+    XMPP_ADD_CONTACT
 } from './actions';
 
 let clientObj;
@@ -23,7 +25,7 @@ const xmppMiddleware = store => next => action => {
                 domain: domain,
                 username: username,
                 password: password,
-                resource: 'gajimbo'
+                resource: 'gajimbo2'
             });
 
             clientObj.on('online', async (address) => {
@@ -68,7 +70,9 @@ const xmppMiddleware = store => next => action => {
                 console.log('stanza')
                 console.log(stanza)
 
-                if (stanza.is('message')) {
+                if (stanza.is('message') && stanza.getChild('result')) {
+                    console.log('message')
+                    console.log(stanza)
                     let message = {
                         to: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('to'),
                         from: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('from').split('/')[0],
@@ -104,11 +108,48 @@ const xmppMiddleware = store => next => action => {
             clientObj.start().catch(console.error);
 
             break;
+
         case DISCONNECT_XMPP:
             if (clientObj) {
                 clientObj.stop();
             }
             break;
+
+        case XMPP_UNREGISTER:
+            if (clientObj) {
+                let unregister_iq = xml('iq', { type: 'set', id: 'unreg1' },
+                    xml('query', 'jabber:iq:register', xml('remove'))
+                )
+                clientObj.send(unregister_iq);
+                clientObj.stop();
+            }
+            break;
+
+        case XMPP_ADD_CONTACT:
+            let iq = xml(
+                'iq',
+                { type: 'set', id: 'addroster1', from: `${clientObj.jid._local}@alumchat.lol`},
+                xml('query', { xmlns: 'jabber:iq:roster' },
+                    xml('item', { jid: `${action.payload}@alumchat.lol`, subscription: 'both' } )
+                )
+            );
+
+            clientObj.send(iq);
+
+            iq = xml('presence', { to: `${action.payload}@alumchat.lol`, type:'subscribe' },
+                xml('status', {}, `Hola, soy ${clientObj.jid._local}.`),
+                xml('nick', "http://jabber.org/protocol/nick", clientObj.jid._local)
+            )
+
+            clientObj.send(iq)
+
+            iq = xml(
+                'iq',
+                { type: 'get', id: 'roster1' },
+                xml('query', { xmlns: 'jabber:iq:roster' })
+            );
+
+            clientObj.send(iq);
 
         default:
             break;

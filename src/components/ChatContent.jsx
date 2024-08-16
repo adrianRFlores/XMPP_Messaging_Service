@@ -34,58 +34,63 @@ const ChatContent = ({ messages, currentUser }) => {
     }
 
     return (
-        <Box display="flex" flexDirection="column" sx={{overflowY: "auto"}}>
-            {messages.map((message, index) => {
-                let isUser = message.from.split('@')[0] === currentUser;
-                let shouldDrawDate = false;
-                let { formattedDate, formattedTime } = formatStamp(message.timestamp);
+        <Box>
+            <Box height="8.7%" borderBottom="1px solid rgba(255, 255, 255, 0.1)" padding="0.5rem 0">
+                hola
+            </Box>
+            <Box display="flex" flexDirection="column" sx={{overflowY: "auto"}}>
+                {messages.map((message, index) => {
+                    let isUser = message.from.split('@')[0] === currentUser;
+                    let shouldDrawDate = false;
+                    let { formattedDate, formattedTime } = formatStamp(message.timestamp);
 
-                if (index > 0) {
-                    shouldDrawDate = drawDateTest(message.timestamp, messages[index - 1].timestamp);
-                } else {
-                    shouldDrawDate = true;
-                }
-                
-				return (
-                    <>
-                        {shouldDrawDate && 
-                            <Typography
-                                marginTop="0.35rem"
-                                display="flex"
-                                alignItems="center"
-                                textAlign="center"
-                                color="rgba(255, 255, 255, 0.4)"
-                                fontWeight="200"
-                                sx={{
-                                    '&::before, &::after': {
-                                        content: '""',
-                                        flex: "1",
-                                        borderBottom: "0.5px solid rgba(255, 255, 255, 0.1)",
-                                        margin: "0 10px"
-                                    }
-                                }}
-                            >
-                                {formattedDate}
-                            </Typography>
-                        }
-                        <Box display="flex" justifyContent={isUser ? "flex-end" : "flex-start"}>
-                            <Box
-                                key={index}
-                                maxWidth="70%"
-                                width="fit-content"
-                                backgroundColor={isUser ? "rgba(255, 255, 255)" : ""}
-                                border={isUser ? "0" : "1px solid rgba(255, 255, 255, 0.1)"}
-                                borderRadius={isUser ? "15px 15px 0 15px" : "15px 15px 15px 0"}
-                                color={isUser ? "black" : "white"}
-                                padding="10px 15px"
-                                margin={isUser ? "0.35rem 1rem 0 0" : "0.35rem 0 0 1rem"}
-                            >
-                                {message.content}
+                    if (index > 0) {
+                        shouldDrawDate = drawDateTest(message.timestamp, messages[index - 1].timestamp);
+                    } else {
+                        shouldDrawDate = true;
+                    }
+                    
+                    return (
+                        <>
+                            {shouldDrawDate && 
+                                <Typography
+                                    marginTop="0.35rem"
+                                    display="flex"
+                                    alignItems="center"
+                                    textAlign="center"
+                                    color="rgba(255, 255, 255, 0.4)"
+                                    fontWeight="200"
+                                    sx={{
+                                        '&::before, &::after': {
+                                            content: '""',
+                                            flex: "1",
+                                            borderBottom: "0.5px solid rgba(255, 255, 255, 0.1)",
+                                            margin: "0 10px"
+                                        }
+                                    }}
+                                >
+                                    {formattedDate}
+                                </Typography>
+                            }
+                            <Box display="flex" justifyContent={isUser ? "flex-end" : "flex-start"}>
+                                <Box
+                                    key={index}
+                                    maxWidth="70%"
+                                    width="fit-content"
+                                    backgroundColor={isUser ? "rgba(255, 255, 255)" : ""}
+                                    border={isUser ? "0" : "1px solid rgba(255, 255, 255, 0.1)"}
+                                    borderRadius={isUser ? "15px 15px 0 15px" : "15px 15px 15px 0"}
+                                    color={isUser ? "black" : "white"}
+                                    padding="10px 15px"
+                                    margin={isUser ? "0.35rem 1rem 0 0" : "0.35rem 0 0 1rem"}
+                                >
+                                    {message.content}
+                                </Box>
                             </Box>
-                        </Box>
-                    </>
-				)
-			})}
+                        </>
+                    )
+                })}
+            </Box>
         </Box>
     );
 };

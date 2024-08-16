@@ -24,10 +24,10 @@ const initialValuesLogin = {
 };
 
 const Form = () => {
-    const { palette } = useTheme();
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { authenticated, error } = useSelector(state => state.xmpp);
+  const { palette } = useTheme();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { authenticated, error } = useSelector(state => state.xmpp);
 
 	useEffect(() => {
         if (authenticated) {
@@ -35,24 +35,24 @@ const Form = () => {
         }
     }, [authenticated, navigate]);
 
-    const login = async (values, onSubmitProps) => {
+  const login = async (values, onSubmitProps) => {
 
-      console.log(values)
+    console.log(values)
 
-      const credentials = {
-        username: values.username,
-        password: values.password,
-        domain: 'alumchat.lol',
-        websocketURL: 'ws://alumchat.lol:7070/ws/'
-      }
+    const credentials = {
+      username: values.username,
+      password: values.password,
+      domain: 'alumchat.lol',
+      websocketURL: 'ws://alumchat.lol:7070/ws/'
+    }
 
-      dispatch(connectXmpp(credentials));
+    dispatch(connectXmpp(credentials));
 
-    };
-    
-    const handleFormSubmit = async (values, onSubmitProps) => {
-        login(values, onSubmitProps);
-    };
+  };
+  
+  const handleFormSubmit = async (values, onSubmitProps) => {
+      login(values, onSubmitProps);
+  };
 
     return (
         <Formik
