@@ -10,7 +10,10 @@ import {
     setRoster,
     addMsg,
     XMPP_UNREGISTER,
-    XMPP_ADD_CONTACT
+    XMPP_ADD_CONTACT,
+    updateUserShow,
+    updateUserImage,
+    SEND_MESSAGE
 } from './actions';
 
 let clientObj;
@@ -28,30 +31,6 @@ const xmppMiddleware = store => next => action => {
                 resource: 'gajimbo2'
             });
 
-            clientObj.on('online', async (address) => {
-                store.dispatch(xmppConnected());
-
-                await clientObj.send(xml("presence"));
-
-                let iq = xml('iq', { type: 'get', id: 'v1', to: 'a2645173@alumchat.lol'}, xml('vCard', 'vcard-temp'));
-
-                await clientObj.send(iq);
-
-                iq = xml(
-                    'iq',
-                    { type: 'get', id: 'roster1' },
-                    xml('query', { xmlns: 'jabber:iq:roster' })
-                );
-                
-                await clientObj.send(iq);
-
-                iq = xml('iq', { type: 'set', id: 'mamReq' }, 
-                xml('query', { xmlns: 'urn:xmpp:mam:2', queryid: 'f27' }));
-
-                await clientObj.send(iq);
-
-            });
-
             clientObj.on('offline', () => {
                 store.dispatch(xmppDisconnected());
             });
@@ -65,21 +44,45 @@ const xmppMiddleware = store => next => action => {
                 }));
             });
 
-            clientObj.on('stanza', (stanza) => {
+            clientObj.on('stanza', async (stanza) => {
                 
-                console.log('stanza')
-                console.log(stanza)
+                console.log(stanza);
 
-                if (stanza.is('message') && stanza.getChild('result')) {
-                    console.log('message')
-                    console.log(stanza)
+                if (stanza.is('presence')) {
+
+                    if (stanza.attrs.type === 'unavailable') {
+                        store.dispatch(updateUserShow(stanza.attrs.from.split('/')[0], 'unavailable'));
+                    } else {
+                        store.dispatch(updateUserShow(stanza.attrs.from.split('/')[0], stanza.getChildText('show') || 'chat' ));
+                    }
+
+                }
+
+                if (stanza.is('message') && stanza.attrs.type === 'chat') {
                     let message = {
                         to: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('to'),
                         from: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('from').split('/')[0],
                         timestamp: stanza.getChild('result').getChild('forwarded').getChild('delay').getAttr('stamp'),
                         content: stanza.getChild('result').getChild('forwarded').getChild('message').getChild('body').getText()
+                    };
+                    store.dispatch(addMsg(message));
+                }
+
+                if (stanza.is('message') && stanza.getChild('result')) {
+                    let message = {
+                        to: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('to'),
+                        from: stanza.getChild('result').getChild('forwarded').getChild('message').getAttr('from').split('/')[0],
+                        timestamp: stanza.getChild('result').getChild('forwarded').getChild('delay').getAttr('stamp'),
+                        content: stanza.getChild('result').getChild('forwarded').getChild('message').getChild('body').getText()
+                    };
+                    store.dispatch(addMsg(message));
+                }
+
+                if (stanza.is('message') && stanza.getChild('event')) {
+                    //console.log(stanza.getChild('event').getChild('items').getChild('item').getChildText('data'))
+                    if (stanza.getChild('event').getChild('items').getChild('item').getChildText('data')) {
+                        store.dispatch(updateUserImage(stanza.attrs.from.split('/')[0], stanza.getChild('event').getChild('items').getChild('item').getChildText('data')));
                     }
-                    store.dispatch(addMsg(message))
                 }
 
                 if (stanza.is('iq') && stanza.getChild('query', 'jabber:iq:roster')) {
@@ -100,8 +103,32 @@ const xmppMiddleware = store => next => action => {
                         ? vCard.getChild('PHOTO').getChildText('BINVAL') 
                         : null;
 
-                    store.dispatch(setUserDetails({username: clientObj.jid._local, profilePic: profilePicture, status: "", presenceMsg: "hola"}))
+                    store.dispatch(setUserDetails({username: clientObj.jid._local, profilePic: '', status: "", presenceMsg: "hola"}))
                 }
+
+            });
+
+            clientObj.on('online', async (address) => {
+                store.dispatch(xmppConnected());
+
+                clientObj.send(xml("presence"));
+
+                let iq = xml('iq', { type: 'get', id: 'v1', to: 'a2645173@alumchat.lol'}, xml('vCard', 'vcard-temp'));
+
+                clientObj.send(iq);
+
+                iq = xml(
+                    'iq',
+                    { type: 'get', id: 'roster1', from: username},
+                    xml('query', { xmlns: 'jabber:iq:roster' })
+                );
+                
+                clientObj.send(iq);
+
+                iq = xml('iq', { type: 'set', id: 'mamReq' }, 
+                xml('query', { xmlns: 'urn:xmpp:mam:2', queryid: 'f27' }));
+
+                clientObj.send(iq);
 
             });
 
@@ -130,7 +157,7 @@ const xmppMiddleware = store => next => action => {
                 'iq',
                 { type: 'set', id: 'addroster1', from: `${clientObj.jid._local}@alumchat.lol`},
                 xml('query', { xmlns: 'jabber:iq:roster' },
-                    xml('item', { jid: `${action.payload}@alumchat.lol`, subscription: 'both' } )
+                    xml('item', { jid: `${action.payload}@alumchat.lol` } )
                 )
             );
 
@@ -150,6 +177,20 @@ const xmppMiddleware = store => next => action => {
             );
 
             clientObj.send(iq);
+
+        case SEND_MESSAGE:
+            let message = xml('message', {
+                to: action.payload[0],
+                from: `${clientObj.jid._local}@alumchat.lol`,
+                type: action.payload[2]
+            },
+                xml('body', {}, action.payload[1])
+            )
+
+            clientObj.send(message);
+
+            clientObj.send(xml('iq', { type: 'set', id: 'mamReq' }, 
+                xml('query', { xmlns: 'urn:xmpp:mam:2', queryid: 'f27' })));
 
         default:
             break;

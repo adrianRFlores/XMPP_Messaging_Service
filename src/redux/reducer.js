@@ -7,7 +7,9 @@ import {
     SET_ROSTER,
     ADD_MSG,
     XMPP_UNREGISTER,
-    XMPP_ADD_CONTACT
+    XMPP_ADD_CONTACT,
+    UPDATE_USER_SHOW,
+    UPDATE_USER_IMAGE
 } from './actions';
 
 const initialState = {
@@ -21,7 +23,9 @@ const initialState = {
         presenceMsg: ""
     },
     roster: [],
-    messages: []
+    status: [],
+    messages: [],
+    images: []
 };
 
 const xmppReducer = (state = initialState, action) => {
@@ -41,11 +45,45 @@ const xmppReducer = (state = initialState, action) => {
         case SET_ROSTER:
             return { ...state, roster: action.payload};
         case ADD_MSG:
-            console.log(state.messages);
-            console.log([...state.messages, action.payload])
             return { ...state, messages: [...state.messages, action.payload] };
         case XMPP_ADD_CONTACT:
-            return state; //{ ...state, roster: [...state.roster, `${action.payload}@alumchat.lol`] };
+            return state;
+        case UPDATE_USER_SHOW:
+            let [jid, newStatus] = action.payload;
+            
+            let existingUser = state.status.find(user => user.from === jid);
+        
+            let updatedStatus = existingUser
+                ? state.status.map(user =>
+                    user.from === jid
+                        ? { ...user, status: newStatus }
+                        : user
+                    )
+                : [...state.status, { from: jid, status: newStatus }];
+
+            console.log(updatedStatus)
+        
+            return { ...state, status: updatedStatus };
+            
+            case UPDATE_USER_IMAGE:
+                let [jidImg, newImg] = action.payload;
+
+                if (jidImg.split('@')[0] === state.userDetails.username) {
+                    return { ...state, userDetails: {...userDetails, profilePic: newImg} }
+                }
+                
+                let existingUserImg = state.images.find(user => user.from === jidImg);
+            
+                let updatedImage = existingUserImg
+                    ? state.images.map(user =>
+                        user.from === jidImg
+                            ? { ...user, image: newImg }
+                            : user
+                        )
+                    : [...state.images, { from: jidImg, image: newImg }];
+                
+                return { ...state, images: updatedImage };
+
         default:
             return state;
     }

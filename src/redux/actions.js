@@ -8,9 +8,12 @@ export const LOGIN_SUCCESS = 'LOGIN_SUCCESS';
 export const LOGIN_FAILURE = 'LOGIN_FAILURE';
 export const SET_USER_DETAILS = 'SET_USER_DETAILS';
 export const SET_ROSTER = 'SET_ROSTER';
-export const USER_CHAT_HISTORY = 'USER_CHAT_HISTORY'
-export const ADD_MSG = 'ADD_MSG'
-export const XMPP_ADD_CONTACT = 'XMPP_ADD_CONTACT'
+export const USER_CHAT_HISTORY = 'USER_CHAT_HISTORY';
+export const ADD_MSG = 'ADD_MSG';
+export const XMPP_ADD_CONTACT = 'XMPP_ADD_CONTACT';
+export const UPDATE_USER_SHOW = 'UPDATE_USER_SHOW';
+export const UPDATE_USER_IMAGE = 'UPDATE_USER_IMAGE';
+export const SEND_MESSAGE = 'SEND_MESSAGE';
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -55,14 +58,29 @@ export const setUserDetails = (userDetails) => ({
 export const setRoster = (roster) => ({
     type: SET_ROSTER,
     payload: roster
-})
+});
 
 export const addMsg = (message) => ({
     type: ADD_MSG,
     payload: message
-})
+});
 
 export const addContact = (username) => ({
     type: XMPP_ADD_CONTACT,
     payload: username
-})
+});
+
+export const updateUserShow = ( jid, show ) => ({
+    type: UPDATE_USER_SHOW,
+    payload: [jid, show]
+});
+
+export const updateUserImage = (jid, image) => ({
+    type: UPDATE_USER_IMAGE,
+    payload: [jid, image]
+});
+
+export const sendMessage = (jid, message, type) => ({
+    type: SEND_MESSAGE,
+    payload: [jid, message, type]
+});

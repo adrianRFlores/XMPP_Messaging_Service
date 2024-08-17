@@ -126,7 +126,7 @@ const Home = () => {
           gridTemplateColumns="1fr 3fr"
         >
           <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal}/>
-          {currentTab && <ChatContent messages={currentMessages} currentUser={username}/>}
+          {currentTab && <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab}/>}
         </Box>
       </div>
     );
