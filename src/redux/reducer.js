@@ -9,7 +9,8 @@ import {
     XMPP_UNREGISTER,
     XMPP_ADD_CONTACT,
     UPDATE_USER_SHOW,
-    UPDATE_USER_IMAGE
+    UPDATE_USER_IMAGE,
+    UPDATE_USER_DETAILS
 } from './actions';
 
 const initialState = {
@@ -60,8 +61,6 @@ const xmppReducer = (state = initialState, action) => {
                         : user
                     )
                 : [...state.status, { from: jid, status: newStatus }];
-
-            console.log(updatedStatus)
         
             return { ...state, status: updatedStatus };
             
@@ -69,7 +68,7 @@ const xmppReducer = (state = initialState, action) => {
                 let [jidImg, newImg] = action.payload;
 
                 if (jidImg.split('@')[0] === state.userDetails.username) {
-                    return { ...state, userDetails: {...userDetails, profilePic: newImg} }
+                    return { ...state, userDetails: {...state.userDetails, profilePic: newImg} }
                 }
                 
                 let existingUserImg = state.images.find(user => user.from === jidImg);
@@ -83,6 +82,9 @@ const xmppReducer = (state = initialState, action) => {
                     : [...state.images, { from: jidImg, image: newImg }];
                 
                 return { ...state, images: updatedImage };
+
+            case UPDATE_USER_DETAILS:
+                return { ...state, userDetails: { ...state.userDetails, status: action.payload[0], presenceMsg: action.payload[1]} };
 
         default:
             return state;

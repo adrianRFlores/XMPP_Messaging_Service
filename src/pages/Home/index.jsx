@@ -7,9 +7,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { addContact } from "../../redux/actions";
+import StatusModal from "../../components/StatusModal";
 
 const addContactSchema = yup.object().shape({
-  user: yup.string().required("Required"),
+  user: yup.string().required("Required").min(1),
 });
 
 const Home = () => {
@@ -21,9 +22,14 @@ const Home = () => {
 	const [currentTab, setCurrentTab] = useState('');
 	const [currentMessages, setCurrentMessages] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
+  }
+
+  const toggleStatusModal = () => {
+    setStatusModalOpen(!statusModalOpen);
   }
 
   const handleAddContact = (values) => {
@@ -37,7 +43,7 @@ const Home = () => {
 				messages.filter((message) => message.to === currentTab || message.from === currentTab)
 			)
 		}
-	}, [currentTab])
+	}, [currentTab, messages])
 
     return (
       <div className="background">
@@ -47,21 +53,21 @@ const Home = () => {
           onClose={toggleModal}
         >
           <Box
-            width="30%"
-            height="25%"
+            width="fit-content"
+            height="fit-content"
             backgroundColor="rgba(255, 255, 255, 0.05)"
             borderRadius="10px"
             sx={{backdropFilter: 'blur(12px)'}}
             boxShadow="0 4px 8px rgba(0, 0, 0, 0.15)"
             border="1px solid rgba(255, 255, 255, 0.1)"
             textAlign="center"
-            position="absolute"
-            top="59%"
-            right="50%"
+            marginLeft="23%"
+            marginTop="32.3%"
             display="flex"
             flexDirection="column"
+            p="0 3rem"
           >
-            <Typography color="white" fontWeight="500" fontSize="1.2rem" m="1rem 0">Add Contact</Typography>
+            <Typography color="white" fontWeight="500" fontSize="1.2rem" m="0.5rem 0">Add Contact</Typography>
             <Formik
               onSubmit={handleAddContact}
               initialValues={{user: ""}}
@@ -83,7 +89,6 @@ const Home = () => {
                     <TextField
                       variant="standard"
                       width="60%"
-                      label="Username"
                       onBlur={handleBlur}
                       onChange={handleChange}
                       value={values.username}
@@ -96,12 +101,13 @@ const Home = () => {
                       type="submit"
                       sx={{
                         width: "fit-content",
-                        m: "1rem 0 0 0",
+                        m: "1rem 0 1rem 0",
                         p: "0.25rem",
                         backgroundColor: palette.primary.main,
                         color: palette.background.alt,
                         "&:hover": { color: palette.primary.main },
                       }}
+                      disabled={Boolean(touched.username) && Boolean(errors.username)}
                     >
                       ADD
                     </Button>
@@ -112,6 +118,8 @@ const Home = () => {
 
           </Box>
         </Modal>
+
+        <StatusModal modalOpen={statusModalOpen} toggleModal={toggleStatusModal} />
 
         <Box
           width="75%"
@@ -125,7 +133,7 @@ const Home = () => {
           textAlign="center"
           gridTemplateColumns="1fr 3fr"
         >
-          <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal}/>
+          <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal}/>
           {currentTab && <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab}/>}
         </Box>
       </div>

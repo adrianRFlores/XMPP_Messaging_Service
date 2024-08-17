@@ -6,12 +6,12 @@ import Options from "./Options";
 const colorMapping = {
     'dnd': 'red',
     'chat': 'green',
-    'xa': 'gray',
-    'away': 'orange',
-    'unavailable': 'black'
+    'xa': 'orange',
+    'away': 'yellow',
+    'unavailable': 'grey'
 };
 
-const Sidebar = ({ setCurrentTab, setModalOpen }) => {
+const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
     const roster = useSelector(state => state.xmpp.roster);
     const status = useSelector(state => state.xmpp.status);
     const images = useSelector(state => state.xmpp.images);
@@ -29,6 +29,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen }) => {
         >
             <Box height="87%" overflowy="auto">
                 {roster.map((user, index) => {
+                    //console.log(user)
                     const userStatus = status.find(s => s.from === user.jid) || { status: "unknown" };
                     const userImage = images.find(s => s.from === user.jid);
 
@@ -58,12 +59,13 @@ const Sidebar = ({ setCurrentTab, setModalOpen }) => {
                                     
                                 </StyledBadge>
                             </Box>
-                            <Typography fontWeight="500" fontSize="1rem" paddingLeft="0.25rem">{user.jid.split('@')[0]} {userStatus.status}</Typography>
+                            <Typography fontWeight="500" fontSize="1rem" paddingLeft="0.25rem">{user.jid.split('@')[0]}</Typography>
+                            <Typography>{user.name}</Typography>
                         </Box>
                     );
                 })}
             </Box>
-            <Options setModalOpen={setModalOpen}/>
+            <Options setModalOpen={setModalOpen} toggleStatusModal={setStatusModal}/>
 
         </Box>
     );

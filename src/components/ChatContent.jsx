@@ -47,11 +47,11 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
     }
 
     return (
-        <Box display="flex" flexDirection="column">
+        <Box display="flex" flexDirection="column" sx={{overflowY: "hidden"}}>
             <Box height="86.94%" display="flex" flexDirection="column">
                 <Box height="12.6%" borderBottom="1px solid rgba(255, 255, 255, 0.1)" padding="0.5rem 0" display="flex" alignItems="center" gap="1rem" p="0 1rem">
-                    <Avatar sx={{ width: "match-parent", height: "match-parent"}} src={`data:image/jpeg;base64,${userImage?.image}`}></Avatar>
-                    <Typography fontWeight="500">{currentUser}</Typography>
+                    <Avatar sx={{ width: "match-parent", height: "match-parent"}} src={`data:image/jpeg;base64,${userImage?.image}`}>{selectedUser.split('@')[0][0]}</Avatar>
+                    <Typography fontWeight="500" fontSize="1.2rem">{selectedUser.split('@')[0]}</Typography>
                 </Box>
                 <Box
                     display="flex"
@@ -76,6 +76,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                                 {shouldDrawDate && 
                                     <Typography
                                         marginTop="0.35rem"
+                                        key={index+20}
                                         display="flex"
                                         alignItems="center"
                                         textAlign="center"
