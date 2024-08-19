@@ -14,10 +14,13 @@ import {
     updateUserShow,
     updateUserImage,
     SEND_MESSAGE,
-    UPDATE_USER_DETAILS
+    UPDATE_USER_DETAILS,
+    SEND_FILE
 } from './actions';
 
 let clientObj;
+
+let pendingFile;
 
 const xmppMiddleware = store => next => action => {
 
@@ -59,6 +62,14 @@ const xmppMiddleware = store => next => action => {
 
                 await clientObj.send(iq);
 
+                const selfAvatar = xml('iq', { type: 'get', id: `avatar-${clientObj.jid._local}`, to: `${clientObj.jid._local}@alumchat.lol`},
+                            xml('pubsub', { xmlns: 'http://jabber.org/protocol/pubsub' },
+                                xml('items', { node: 'urn:xmpp:avatar:data' })
+                            )
+                        );
+
+                clientObj.send(selfAvatar);
+
             });
 
             clientObj.on('offline', () => {
@@ -89,7 +100,8 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 if (stanza.is('message') && stanza.getChild('event')) {
-                    //console.log(stanza.getChild('event').getChild('items').getChild('item').getChildText('data'))
+                    console.log(stanza.attrs.from.split('/')[0])
+                    console.log(stanza.getChild('event').getChild('items').getChild('item').getChildText('data'))
                     if (stanza.getChild('event').getChild('items').getChild('item').getChildText('data')) {
                         store.dispatch(updateUserImage(stanza.attrs.from.split('/')[0], stanza.getChild('event').getChild('items').getChild('item').getChildText('data')));
                     }
@@ -120,7 +132,72 @@ const xmppMiddleware = store => next => action => {
                         subscription: item.attrs.subscription
                     }));
 
-                    store.dispatch(setRoster(contacts))
+                    store.dispatch(setRoster(contacts));
+
+                    contacts.forEach((contact, index) => {
+                        const avatarFetchIq = xml('iq', { type: 'get', id: `avatar-${contact.jid}`, to: contact.jid},
+                            xml('pubsub', { xmlns: 'http://jabber.org/protocol/pubsub' },
+                                xml('items', { node: 'urn:xmpp:avatar:data' })
+                            )
+                        );
+                        clientObj.send(avatarFetchIq);
+                    });
+
+                }
+
+                if (stanza.is('iq') && stanza.attrs.type === 'result' && stanza.attrs.id.includes('avatar-')) {
+                    if (stanza.getChild('pubsub').getChild('items').getChild('item').getChildText('data')) {
+                        store.dispatch(updateUserImage(stanza.attrs.from, stanza.getChild('pubsub').getChild('items').getChild('item').getChildText('data')));
+                    }
+                }
+
+                if (stanza.is('iq') && stanza.attrs.id === 'uploadSlot1' && stanza.attrs.type === 'result') {
+                    console.log('hola')
+                    const slotElement = stanza.getChild('slot', 'urn:xmpp:http:upload:0');
+                    if (slotElement) {
+                        const putUrl = slotElement.getChild('put').attrs.url;
+                        const getUrl = slotElement.getChild('get').attrs.url;
+        
+                        try {
+                            const response = await fetch(putUrl, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': pendingFile.file.type,
+                                    'Content-Length': pendingFile.file.size,
+                                },
+                                body: pendingFile.file,
+                            });
+        
+                            if (response.ok) {
+                                const message = xml('message', {
+                                    to: pendingFile.recipient,
+                                    from: `${clientObj.jid._local}@alumchat.lol`,
+                                    type: pendingFile.type
+                                },
+                                    xml('body', {}, `File sent: ${pendingFile.file.name}`),
+                                    xml('x', { xmlns: 'jabber:x:oob' },
+                                        xml('url', {}, getUrl),
+                                        xml('desc', {}, pendingFile.file.name)
+                                    )
+                                );
+        
+                                clientObj.send(message);
+        
+                                const localMessage = {
+                                    to: pendingFile.recipient,
+                                    from: `${clientObj.jid._local}@alumchat.lol`,
+                                    timestamp: new Date().toISOString(),
+                                    content: `${getUrl}`
+                                };
+        
+                                store.dispatch(addMsg(localMessage));
+                            } else {
+                                console.error('File upload failed:', response.statusText);
+                            }
+                        } catch (error) {
+                            console.error('File upload error:', error);
+                        }
+                    }
                 }
 
             });
@@ -200,6 +277,27 @@ const xmppMiddleware = store => next => action => {
             ));
             break;
 
+        case SEND_FILE:
+
+            const recipient = action.payload[0];
+            const file = action.meta;
+
+            console.log(file)
+        
+            const requestUploadSlotIq = xml('iq', { type: 'get', id: 'uploadSlot1', to: 'httpfileupload.alumchat.lol', xmlns: 'jabber:client' },
+                xml('request', { xmlns: 'urn:xmpp:http:upload:0', filename: file.file.name, size: file.file.size, 'content-type': file.file.type})
+            );
+
+            clientObj.send(requestUploadSlotIq);
+
+            pendingFile = {
+                file: file.file,
+                recipient: recipient,
+                type: action.payload[1]
+            };
+
+            break;
+            
         default:
             break;
     }

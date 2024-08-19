@@ -15,6 +15,7 @@ export const UPDATE_USER_SHOW = 'UPDATE_USER_SHOW';
 export const UPDATE_USER_IMAGE = 'UPDATE_USER_IMAGE';
 export const SEND_MESSAGE = 'SEND_MESSAGE';
 export const UPDATE_USER_DETAILS = 'UPDATE_USER_DETAILS';
+export const SEND_FILE = 'SEND_FILE';
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -89,4 +90,10 @@ export const sendMessage = (jid, message, type) => ({
 export const updateUserDetails = (status, presence) => ({
     type: UPDATE_USER_DETAILS,
     payload: [status, presence]
-})
+});
+
+export const sendFile = (jid, file, type) => ({
+    type: SEND_FILE,
+    payload: [jid, type],
+    meta: { file }
+});

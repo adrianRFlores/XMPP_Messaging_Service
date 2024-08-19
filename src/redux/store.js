@@ -6,7 +6,11 @@ const store = configureStore({
     reducer: {
         xmpp: xmppReducer,
     },
-    middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(xmppMiddleware),
+    middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+        serializableCheck: {
+            ignoreActions: ['SEND_FILE']
+        }
+    }).concat(xmppMiddleware),
 });
 
 export default store;

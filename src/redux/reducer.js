@@ -10,7 +10,8 @@ import {
     XMPP_ADD_CONTACT,
     UPDATE_USER_SHOW,
     UPDATE_USER_IMAGE,
-    UPDATE_USER_DETAILS
+    UPDATE_USER_DETAILS,
+    SEND_FILE,
 } from './actions';
 
 const initialState = {

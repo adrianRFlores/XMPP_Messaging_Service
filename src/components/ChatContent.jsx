@@ -3,13 +3,18 @@ import { AttachFileRounded, SendRounded } from "@mui/icons-material";
 import { StyledBadge } from './StyledBadge';
 import { useSelector, useDispatch } from 'react-redux';
 import { useState } from "react";
-import { sendMessage } from "../redux/actions";
+import { sendMessage, sendFile } from "../redux/actions";
 
 const ChatContent = ({ messages, currentUser, selectedUser }) => {
     const dispatch = useDispatch();
     const images = useSelector(state => state.xmpp.images);
     const userImage = images.find(s => s.from === selectedUser);
     const [inputMessage, setInputMessage] = useState('');
+    const [selectedFile, setSelectedFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        setSelectedFile(event.target.files[0]);
+    };
 
     const drawDateTest = (lastDate, currentDate) => {
         const time1 = new Date(lastDate);
@@ -43,6 +48,12 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
             console.log(selectedUser)
             dispatch(sendMessage(selectedUser, inputMessage, 'chat'));
             setInputMessage('')
+        }
+        if (selectedFile) {
+
+            dispatch(sendFile(selectedUser, selectedFile));
+            //console.log('File to upload:', selectedFile);
+            setSelectedFile(null);
         }
     }
 
@@ -105,8 +116,10 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                                         color={isUser ? "black" : "white"}
                                         padding="10px 15px"
                                         margin={isUser ? "0.35rem 1rem 0 0" : "0.35rem 0 0 1rem"}
+                                        sx={{wordBreak: "break-word",
+                                        overflowWrap: "break-word"}}
                                     >
-                                        <Box flexGrow="1">
+                                        <Box flexGrow="1" textAlign="justify">
                                             {message.content}
                                         </Box>
                                         <Typography 
@@ -128,9 +141,18 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
             </Box>
             <Box display="flex" justifyContent="space-between" borderTop="1px solid rgba(255, 255, 255, 0.1)" height="13.06%" alignItems="center">
                 <Box border="1px solid rgba(255, 255, 255, 0.1)" borderRadius="50%" m="0 1rem 0 1rem" height="fit-content">
-                    <IconButton>
-                        <AttachFileRounded />
-                    </IconButton>
+                    <input
+                        accept="*"
+                        id="file-input"
+                        type="file"
+                        style={{ display: 'none' }}
+                        onChange={handleFileChange}
+                    />
+                    <label htmlFor="file-input">
+                        <IconButton component="span">
+                            <AttachFileRounded />
+                        </IconButton>
+                    </label>
                 </Box>
                 <TextField variant="standard" fullWidth value={inputMessage} onChange={(e) => setInputMessage(e.target.value)}/>
                 <Box border="1px solid rgba(255, 255, 255, 0.1)" borderRadius="50%" m="0 1rem 0 1rem" height="fit-content">
