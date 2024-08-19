@@ -100,24 +100,27 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 if (stanza.is('message') && stanza.getChild('event')) {
-                    console.log(stanza.attrs.from.split('/')[0])
-                    console.log(stanza.getChild('event').getChild('items').getChild('item').getChildText('data'))
                     if (stanza.getChild('event').getChild('items').getChild('item').getChildText('data')) {
                         store.dispatch(updateUserImage(stanza.attrs.from.split('/')[0], stanza.getChild('event').getChild('items').getChild('item').getChildText('data')));
                     }
                 }
 
                 else if (stanza.is('message')) {
-                    console.log('message', stanza)
                     const forwarded = stanza.getChild('result')?.getChild('forwarded');
                     const messageStanza = forwarded ? forwarded.getChild('message') : stanza;
+                    let image = '';
+                    if (forwarded && messageStanza.getChild('x')) {
+                        image = messageStanza.getChild('x').getChildText('url');
+                    }
                     const body = messageStanza?.getChild('body')?.getText();
+                    console.log(body)
                     if (body) {
                         let message = {
                             to: messageStanza.attrs.to,
                             from: messageStanza.attrs.from.split('/')[0],
                             timestamp: forwarded ? forwarded.getChild('delay').attrs.stamp : new Date().toISOString(),
-                            content: body
+                            content: body,
+                            image: image
                         };
                         store.dispatch(addMsg(message));
                     }
@@ -152,7 +155,6 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 if (stanza.is('iq') && stanza.attrs.id === 'uploadSlot1' && stanza.attrs.type === 'result') {
-                    console.log('hola')
                     const slotElement = stanza.getChild('slot', 'urn:xmpp:http:upload:0');
                     if (slotElement) {
                         const putUrl = slotElement.getChild('put').attrs.url;
@@ -187,7 +189,8 @@ const xmppMiddleware = store => next => action => {
                                     to: pendingFile.recipient,
                                     from: `${clientObj.jid._local}@alumchat.lol`,
                                     timestamp: new Date().toISOString(),
-                                    content: `${getUrl}`
+                                    content: `${getUrl}`, 
+                                    image: `${getUrl}`
                                 };
         
                                 store.dispatch(addMsg(localMessage));
@@ -263,7 +266,8 @@ const xmppMiddleware = store => next => action => {
                     to: action.payload[0],
                     from: `${clientObj.jid._local}@alumchat.lol`,
                     timestamp: new Date().toISOString(),
-                    content: action.payload[1]
+                    content: action.payload[1],
+                    image: ''
             };
 
             console.log(message)

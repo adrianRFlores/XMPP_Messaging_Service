@@ -81,6 +81,8 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                         } else {
                             shouldDrawDate = true;
                         }
+
+                        console.log(message.content)
                         
                         return (
                             <>
@@ -117,11 +119,24 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                                         padding="10px 15px"
                                         margin={isUser ? "0.35rem 1rem 0 0" : "0.35rem 0 0 1rem"}
                                         sx={{wordBreak: "break-word",
-                                        overflowWrap: "break-word"}}
+                                            overflowWrap: "break-word"
+                                        }}
                                     >
-                                        <Box flexGrow="1" textAlign="justify">
-                                            {message.content}
-                                        </Box>
+                                        {message.image !== '' ? 
+                                            <Box
+                                                component="img"
+                                                src={message.image}
+                                                alt={message.content}
+                                                maxWidth="100%" 
+                                                maxHeight="100%"
+                                                borderRadius="15px"
+                                                sx={{objectFit:"contain"}}
+                                            />
+                                        : 
+                                            <Box flexGrow="1" textAlign="justify">
+                                                {message.content}
+                                            </Box>
+                                        }
                                         <Typography 
                                             fontSize="0.6rem" 
                                             fontWeight="200" 
@@ -140,7 +155,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                 </Box>
             </Box>
             <Box display="flex" justifyContent="space-between" borderTop="1px solid rgba(255, 255, 255, 0.1)" height="13.06%" alignItems="center">
-                <Box border="1px solid rgba(255, 255, 255, 0.1)" borderRadius="50%" m="0 1rem 0 1rem" height="fit-content">
+                <Box border="1px solid rgba(255, 255, 255, 0.1)" borderRadius="50%" m="0 1rem 0 1rem" height="fit-content" sx={{backgroundColor: selectedFile ? 'white' : 'transparent'}}>
                     <input
                         accept="*"
                         id="file-input"
@@ -150,7 +165,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                     />
                     <label htmlFor="file-input">
                         <IconButton component="span">
-                            <AttachFileRounded />
+                            <AttachFileRounded sx={{ color: selectedFile ? 'black' : 'inherit' }}/>
                         </IconButton>
                     </label>
                 </Box>
