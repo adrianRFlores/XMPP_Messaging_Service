@@ -35,7 +35,7 @@ const xmppMiddleware = store => next => action => {
             clientObj.on('online', async (address) => {
                 store.dispatch(xmppConnected());
 
-                await clientObj.send(xml("presence"));
+                await clientObj.send(xml('presence', {}, xml('priority', {}, 127)));
 
                 store.dispatch(setUserDetails({username: clientObj.jid._local, profilePic: '', status: "chat", presenceMsg: ""}))
 
@@ -96,6 +96,7 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 else if (stanza.is('message')) {
+                    console.log('message', stanza)
                     const forwarded = stanza.getChild('result')?.getChild('forwarded');
                     const messageStanza = forwarded ? forwarded.getChild('message') : stanza;
                     const body = messageStanza?.getChild('body')?.getText();

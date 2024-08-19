@@ -134,7 +134,7 @@ const Home = () => {
           gridTemplateColumns="1fr 3fr"
         >
           <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal}/>
-          {currentTab && <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab}/>}
+          {currentTab && <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab} key={currentTab}/>}
         </Box>
       </div>
     );
