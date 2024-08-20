@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { StyledBadge } from "./StyledBadge";
 import Options from "./Options";
 import { People, Person } from "@mui/icons-material";
+import { useState } from "react";
 
 const colorMapping = {
     'dnd': 'red',
@@ -16,6 +17,8 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
     const roster = useSelector(state => state.xmpp.roster);
     const status = useSelector(state => state.xmpp.status);
     const images = useSelector(state => state.xmpp.images);
+    const groupchats = useSelector(state => state.xmpp.groupchats);
+    const [tabType, setTabType] = useState(true);
 
     const handleUserClick = (user) => {
         setCurrentTab(user);
@@ -30,7 +33,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
         >
             <Box height="87%" sx={{overflowY:"hidden"}} display='flex' justifyContent="space-between" flexDirection="column">
                 <Box display="flex" sx={{overflowY:"auto"}} flexDirection="column" width="100%">
-                    {roster.map((user, index) => {
+                    {tabType && roster.map((user, index) => {
                         //console.log(user)
                         const userStatus = status.find(s => s.from === user.jid) || { status: "unknown" };
                         const userImage = images.find(s => s.from === user.jid);
@@ -68,9 +71,16 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
                             </Box>
                         );
                     })}
+
+                    {!tabType && groupchats.map((gc, index) => {
+                        return (
+                            <Box>hola</Box>
+                        )
+                    })}
+
                 </Box>
                 <Box display="grid" gridTemplateColumns="1fr 1fr" borderTop="1px solid rgba(255, 255, 255, 0.1)">
-                    <Box borderRight="1px solid rgba(255, 255, 255, 0.1)" p="0.5rem 0 0.3rem 0"
+                    <Box borderRight="1px solid rgba(255, 255, 255, 0.1)" p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(true)}}
                         sx={{
                             '&:hover': {
                                 backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -82,7 +92,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
                     >
                         <Person />
                     </Box>
-                    <Box p="0.5rem 0 0.3rem 0"
+                    <Box p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(false)}}
                         sx={{
                             '&:hover': {
                                 backgroundColor: "rgba(255, 255, 255, 0.05)",

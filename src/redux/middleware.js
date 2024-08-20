@@ -70,6 +70,12 @@ const xmppMiddleware = store => next => action => {
 
                 clientObj.send(selfAvatar);
 
+                const bookmarks = xml('iq', { type: 'get', id: 'gc1' }, 
+                    xml('query', 'jabber:iq:private', xml('storage', 'storage:bookmarks'))
+                )
+
+                clientObj.send(selfAvatar);
+
             });
 
             clientObj.on('offline', () => {
@@ -88,6 +94,10 @@ const xmppMiddleware = store => next => action => {
             clientObj.on('stanza', async (stanza) => {
                 
                 console.log(stanza);
+
+                if (stanza.is('iq') && stanza.attrs.id === 'gc1') {
+                    
+                }
 
                 if (stanza.is('presence')) {
 
@@ -120,8 +130,10 @@ const xmppMiddleware = store => next => action => {
                             from: messageStanza.attrs.from.split('/')[0],
                             timestamp: forwarded ? forwarded.getChild('delay').attrs.stamp : new Date().toISOString(),
                             content: body,
-                            image: image
+                            image: image,
+                            ofrom: messageStanza.attrs.type === 'groupchat' ? `${messageStanza.attrs.from.split('/')[1]}@alumchat.lol` : ''
                         };
+                        console.log(message);
                         store.dispatch(addMsg(message));
                     }
                 }

@@ -12,6 +12,7 @@ import {
     UPDATE_USER_IMAGE,
     UPDATE_USER_DETAILS,
     SEND_FILE,
+    ADD_GROUPCHAT
 } from './actions';
 
 const initialState = {
@@ -27,7 +28,8 @@ const initialState = {
     roster: [],
     status: [],
     messages: [],
-    images: []
+    images: [],
+    groupchats: []
 };
 
 const xmppReducer = (state = initialState, action) => {
@@ -84,8 +86,11 @@ const xmppReducer = (state = initialState, action) => {
                 
                 return { ...state, images: updatedImage };
 
-            case UPDATE_USER_DETAILS:
-                return { ...state, userDetails: { ...state.userDetails, status: action.payload[0], presenceMsg: action.payload[1]} };
+        case UPDATE_USER_DETAILS:
+            return { ...state, userDetails: { ...state.userDetails, status: action.payload[0], presenceMsg: action.payload[1]} };
+
+        case ADD_GROUPCHAT:
+            return { ...state, groupchats: [ ...state.groupchats, action.payload ]};
 
         default:
             return state;
