@@ -16,7 +16,9 @@ export const UPDATE_USER_IMAGE = 'UPDATE_USER_IMAGE';
 export const SEND_MESSAGE = 'SEND_MESSAGE';
 export const UPDATE_USER_DETAILS = 'UPDATE_USER_DETAILS';
 export const SEND_FILE = 'SEND_FILE';
-export const ADD_GROUPCHAT = 'ADD_GROUPCHAT';
+export const UPDATE_GROUPCHAT = 'UPDATE_GROUPCHAT';
+export const SET_GROUPCHATS = 'SET_GROUPCHATS';
+export const UPDATE_GROUPCHAT_MEMBERS = 'UPDATE_GROUPCHAT_MEMBERS'
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -99,7 +101,17 @@ export const sendFile = (jid, file, type) => ({
     meta: { file }
 });
 
-export const addGroupchat = (groupchat) => ({
-    type: ADD_GROUPCHAT,
+export const updateGroupchat = (groupchat) => ({
+    type: UPDATE_GROUPCHAT,
     payload: groupchat,
+})
+
+export const updateGroupchatMembers = (groupchat) => ({
+    type: UPDATE_GROUPCHAT_MEMBERS,
+    payload: groupchat,
+})
+
+export const setGroupchats = (groupchats) => ({
+    type: SET_GROUPCHATS,
+    payload: groupchats,
 })

@@ -12,7 +12,9 @@ import {
     UPDATE_USER_IMAGE,
     UPDATE_USER_DETAILS,
     SEND_FILE,
-    ADD_GROUPCHAT
+    UPDATE_GROUPCHAT,
+    UPDATE_GROUPCHAT_MEMBERS,
+    SET_GROUPCHATS
 } from './actions';
 
 const initialState = {
@@ -67,30 +69,46 @@ const xmppReducer = (state = initialState, action) => {
         
             return { ...state, status: updatedStatus };
             
-            case UPDATE_USER_IMAGE:
-                let [jidImg, newImg] = action.payload;
+        case UPDATE_USER_IMAGE:
+            let [jidImg, newImg] = action.payload;
 
-                if (jidImg.split('@')[0] === state.userDetails.username) {
-                    return { ...state, userDetails: {...state.userDetails, profilePic: newImg} }
-                }
-                
-                let existingUserImg = state.images.find(user => user.from === jidImg);
+            if (jidImg.split('@')[0] === state.userDetails.username) {
+                return { ...state, userDetails: {...state.userDetails, profilePic: newImg} }
+            }
             
-                let updatedImage = existingUserImg
-                    ? state.images.map(user =>
-                        user.from === jidImg
-                            ? { ...user, image: newImg }
-                            : user
-                        )
-                    : [...state.images, { from: jidImg, image: newImg }];
-                
-                return { ...state, images: updatedImage };
+            let existingUserImg = state.images.find(user => user.from === jidImg);
+        
+            let updatedImage = existingUserImg
+                ? state.images.map(user =>
+                    user.from === jidImg
+                        ? { ...user, image: newImg }
+                        : user
+                    )
+                : [...state.images, { from: jidImg, image: newImg }];
+            
+            return { ...state, images: updatedImage };
 
         case UPDATE_USER_DETAILS:
             return { ...state, userDetails: { ...state.userDetails, status: action.payload[0], presenceMsg: action.payload[1]} };
 
-        case ADD_GROUPCHAT:
-            return { ...state, groupchats: [ ...state.groupchats, action.payload ]};
+        case UPDATE_GROUPCHAT:
+            let updatedGroupchats = state.groupchats.map(gc => 
+                gc.jid === action.payload.jid ? 
+                { ...gc, name: action.payload.name } : gc
+            )
+            console.log(updatedGroupchats)
+            return { ...state, groupchats: updatedGroupchats};
+
+        case UPDATE_GROUPCHAT_MEMBERS:
+            let updatedMembers = state.groupchats.map(gc => 
+                gc.jid === action.payload.jid ? 
+                { ...gc, members: action.payload.members } : gc
+            )
+            console.log(updatedMembers)
+            return { ...state, groupchats: updatedMembers};
+
+        case SET_GROUPCHATS:
+            return { ...state, groupchats: action.payload };
 
         default:
             return state;

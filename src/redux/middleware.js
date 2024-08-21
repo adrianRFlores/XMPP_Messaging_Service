@@ -13,9 +13,12 @@ import {
     XMPP_ADD_CONTACT,
     updateUserShow,
     updateUserImage,
+    setGroupchats,
+    updateGroupchat,
     SEND_MESSAGE,
     UPDATE_USER_DETAILS,
-    SEND_FILE
+    SEND_FILE,
+    updateGroupchatMembers
 } from './actions';
 
 let clientObj;
@@ -74,7 +77,7 @@ const xmppMiddleware = store => next => action => {
                     xml('query', 'jabber:iq:private', xml('storage', 'storage:bookmarks'))
                 )
 
-                clientObj.send(selfAvatar);
+                clientObj.send(bookmarks);
 
             });
 
@@ -93,10 +96,35 @@ const xmppMiddleware = store => next => action => {
 
             clientObj.on('stanza', async (stanza) => {
                 
-                console.log(stanza);
+                //console.log(stanza);
 
                 if (stanza.is('iq') && stanza.attrs.id === 'gc1') {
-                    
+                    let groupchats = [];
+                    //console.log(stanza.getChild('query').getChild('storage').getChildren('conference'))
+                    stanza.getChild('query').getChild('storage').getChildren('conference').map((item) => {
+                        groupchats.push({
+                            jid: item.attrs.jid,
+                            name: "",
+                            members: []
+                        });
+                        clientObj.send(xml('iq', { type: 'get', id: `gcDetails-${item.attrs.jid.split('@')[0]}`, to: item.attrs.jid }, 
+                            xml('query', 'http://jabber.org/protocol/disco#info')
+                        ));
+                        clientObj.send(xml('iq', { type: 'get', id: `gcOccupants-${item.attrs.jid.split('@')[0]}`, to: item.attrs.jid }, 
+                            xml('query', 'http://jabber.org/protocol/disco#items')
+                        ));
+                    });
+                    store.dispatch(setGroupchats(groupchats));
+                }
+
+                if(stanza.is('iq') && stanza.attrs.id.includes('gcDetails') && stanza.attrs.type === 'result') {
+                    let identity = stanza.getChild('query').getChild('identity');
+                    store.dispatch(updateGroupchat({ jid: stanza.attrs.from, name: identity.attrs.name}));
+                }
+
+                if (stanza.is('iq') && stanza.attrs.type === 'result' && stanza.attrs.id.startsWith('gcOccupants-')) {
+                    let items = stanza.getChild('query').getChildren('item').map(item => `${item.attrs.jid.split('/')[1]}@alumchat.lol`);
+                    store.dispatch(updateGroupchatMembers({ jid: stanza.attrs.from, members: items}));
                 }
 
                 if (stanza.is('presence')) {
@@ -116,6 +144,7 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 else if (stanza.is('message')) {
+                    console.log(stanza)
                     const forwarded = stanza.getChild('result')?.getChild('forwarded');
                     const messageStanza = forwarded ? forwarded.getChild('message') : stanza;
                     let image = '';
@@ -123,7 +152,7 @@ const xmppMiddleware = store => next => action => {
                         image = messageStanza.getChild('x').getChildText('url');
                     }
                     const body = messageStanza?.getChild('body')?.getText();
-                    console.log(body)
+                    //console.log(body)
                     if (body) {
                         let message = {
                             to: messageStanza.attrs.to,
@@ -133,7 +162,7 @@ const xmppMiddleware = store => next => action => {
                             image: image,
                             ofrom: messageStanza.attrs.type === 'groupchat' ? `${messageStanza.attrs.from.split('/')[1]}@alumchat.lol` : ''
                         };
-                        console.log(message);
+                        //console.log(message);
                         store.dispatch(addMsg(message));
                     }
                 }

@@ -8,6 +8,7 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import { addContact } from "../../redux/actions";
 import StatusModal from "../../components/StatusModal";
+import GroupChatContent from "../../components/GroupChatContent";
 
 const addContactSchema = yup.object().shape({
   user: yup.string().required("Required").min(1),
@@ -18,6 +19,7 @@ const Home = () => {
   const dispatch = useDispatch();
 	const messages = useSelector(state => state.xmpp.messages);
 	const username = useSelector(state => state.xmpp.userDetails.username);
+  const groupchats = useSelector(state => state.xmpp.groupchats);
 
 	const [currentTab, setCurrentTab] = useState('');
 	const [currentMessages, setCurrentMessages] = useState([]);
@@ -38,7 +40,7 @@ const Home = () => {
   }
 
 	useEffect(() => {
-		if (currentTab.includes('@alumchat.lol')) {
+		if (currentTab.includes('alumchat.lol')) {
 			setCurrentMessages(
 				messages.filter((message) => message.to === currentTab || message.from === currentTab)
 			)
@@ -134,7 +136,19 @@ const Home = () => {
           gridTemplateColumns="1fr 3fr"
         >
           <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal}/>
-          {currentTab && <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab} key={currentTab}/>}
+          {!currentTab && <></>}
+          {currentTab && !currentTab.includes('@conference') ? 
+            <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab} key={currentTab}/>
+            :
+            <GroupChatContent
+              messages={currentMessages}
+              currentUser={username}
+              selectedGroup={currentTab}
+              name={groupchats.find(gc => gc.jid === currentTab)?.name}
+              members={groupchats.find(gc => gc.jid === currentTab)?.members}
+              key={currentTab} 
+            />
+          }
         </Box>
       </div>
     );

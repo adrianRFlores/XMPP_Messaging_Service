@@ -5,12 +5,12 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useState } from "react";
 import { sendMessage, sendFile } from "../redux/actions";
 
-const ChatContent = ({ messages, currentUser, selectedUser }) => {
+const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members }) => {
     const dispatch = useDispatch();
     const images = useSelector(state => state.xmpp.images);
-    const userImage = images.find(s => s.from === selectedUser);
     const [inputMessage, setInputMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
+    let membersString = members?.map(member => member.split('@')[0]).join(', ');
 
     const handleFileChange = (event) => {
         setSelectedFile(event.target.files[0]);
@@ -45,14 +45,14 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
 
     const handleSend = () => {
         if (inputMessage) {
-            console.log(selectedUser)
-            dispatch(sendMessage(selectedUser, inputMessage, 'chat'));
+            console.log(selectedGroup)
+            //dispatch(sendMessage(selectedUser, inputMessage, 'chat'));
             setInputMessage('')
         }
         if (selectedFile) {
 
-            dispatch(sendFile(selectedUser, selectedFile));
-            //console.log('File to upload:', selectedFile);
+            //dispatch(sendFile(selectedGroup, selectedFile));
+            console.log('File to upload:', selectedFile);
             setSelectedFile(null);
         }
     }
@@ -61,8 +61,11 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
         <Box display="flex" flexDirection="column" sx={{overflowY: "hidden"}}>
             <Box height="86.94%" display="flex" flexDirection="column">
                 <Box height="12.6%" borderBottom="1px solid rgba(255, 255, 255, 0.1)" padding="0.5rem 0" display="flex" alignItems="center" gap="1rem" p="0 1rem">
-                    <Avatar sx={{ width: "match-parent", height: "match-parent"}} src={`data:image/jpeg;base64,${userImage?.image}`}>{selectedUser.split('@')[0][0]}</Avatar>
-                    <Typography fontWeight="500" fontSize="1.2rem">{selectedUser.split('@')[0]}</Typography>
+                    <Avatar sx={{ width: "match-parent", height: "match-parent"}}>{selectedGroup.split('@')[0][0]}</Avatar>
+                    <Box display="flex" flexDirection="column" alignItems="flex-start">
+                        <Typography fontWeight="500" fontSize="1.2rem">{name}</Typography>
+                        <Typography fontWeight="300" fontSize="0.8rem">{membersString?.length > 60 ? membersString.slice(0, 60) + '...' : membersString}</Typography>
+                    </Box>
                 </Box>
                 <Box
                     display="flex"
@@ -75,6 +78,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                         let isUser = message.from.split('@')[0] === currentUser;
                         let shouldDrawDate = false;
                         let { formattedDate, formattedTime } = formatStamp(message.timestamp);
+                        let userImage = isUser ? images.find(s => s.from === `${currentUser}@alumchat.lol`) : images.find(s => s.from === message.ofrom)
 
                         if (index > 0) {
                             shouldDrawDate = drawDateTest(message.timestamp, messages[index - 1].timestamp);
@@ -105,7 +109,11 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                                         {formattedDate}
                                     </Typography>
                                 }
-                                <Box display="flex" justifyContent={isUser ? "flex-end" : "flex-start"}>
+                                <Box display="flex"
+                                    justifyContent={isUser ? "flex-end" : "flex-start"}
+                                    flexDirection={isUser ? "row-reverse" : "row"}
+                                >
+                                    <Avatar src={userImage}>{message.ofrom.split('@')[0][0]}</Avatar>
                                     <Box
                                         key={index}
                                         maxWidth="70%"
@@ -120,6 +128,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                                             overflowWrap: "break-word"
                                         }}
                                     >
+                                        <Typography fontWeight="500" textAlign={isUser ? "right" : "left"}>{message.ofrom.split('@')[0]}</Typography>
                                         {message.image !== '' ? 
                                             <Box
                                                 component="img"
@@ -178,4 +187,4 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
     );
 };
 
-export default ChatContent;
+export default GroupChatContent;

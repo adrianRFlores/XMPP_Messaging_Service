@@ -34,7 +34,6 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
             <Box height="87%" sx={{overflowY:"hidden"}} display='flex' justifyContent="space-between" flexDirection="column">
                 <Box display="flex" sx={{overflowY:"auto"}} flexDirection="column" width="100%">
                     {tabType && roster.map((user, index) => {
-                        //console.log(user)
                         const userStatus = status.find(s => s.from === user.jid) || { status: "unknown" };
                         const userImage = images.find(s => s.from === user.jid);
 
@@ -74,7 +73,33 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
 
                     {!tabType && groupchats.map((gc, index) => {
                         return (
-                            <Box>hola</Box>
+                            <Box
+                                key={index}
+                                borderBottom="1px solid rgba(255, 255, 255, 0.1)"
+                                p="0.7rem 0"
+                                height="fit-content"
+                                display='flex'
+                                flexDirection="row"
+                                alignItems="center"
+                                onClick={() => {handleUserClick(gc.jid)}}
+                                sx={{
+                                    '&:hover': {
+                                        backgroundColor: "rgba(255, 255, 255, 0.1)",
+                                        transition: "0.3s",
+                                        cursor: 'pointer'
+                                    },
+                                    borderRadius: index === 0 ? '10px 0 0 0' : '0px',
+                                    transition: "0.3s"
+                                }}
+                            >
+                                <Box width="fit-content" p="0.5rem">
+                                    <Avatar>{gc.jid.split('@')[0].charAt(0)}</Avatar>
+                                </Box>
+                                <Box display="flex" flexDirection="column" alignItems="flex-start">
+                                    <Typography fontWeight="500" fontSize="1rem" paddingLeft="0.25rem">{gc.name}</Typography>
+                                    <Typography paddingLeft="0.25rem" fontSize="0.7rem" fontWeight="200">{gc.jid}</Typography>
+                                </Box>
+                            </Box>
                         )
                     })}
 
