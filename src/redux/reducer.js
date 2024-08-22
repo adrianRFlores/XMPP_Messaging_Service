@@ -14,7 +14,10 @@ import {
     SEND_FILE,
     UPDATE_GROUPCHAT,
     UPDATE_GROUPCHAT_MEMBERS,
-    SET_GROUPCHATS
+    SET_GROUPCHATS,
+    ADD_NOTIFICATION,
+    REMOVE_NOTIFICATION,
+    REMOVE_MSG_NOTIFICATION
 } from './actions';
 
 const initialState = {
@@ -31,7 +34,8 @@ const initialState = {
     status: [],
     messages: [],
     images: [],
-    groupchats: []
+    groupchats: [],
+    notifications: []
 };
 
 const xmppReducer = (state = initialState, action) => {
@@ -109,6 +113,15 @@ const xmppReducer = (state = initialState, action) => {
 
         case SET_GROUPCHATS:
             return { ...state, groupchats: action.payload };
+
+        case ADD_NOTIFICATION:
+            return { ...state, notifications: [ ...state.notifications, action.payload ] }
+        
+        case REMOVE_NOTIFICATION:
+            return { ...state, notifications: state.notifications.filter((item, index) => index !== action.payload[0]) };
+
+        case REMOVE_MSG_NOTIFICATION:
+            return { ...state, notifications: state.notifications.filter((item) => item.from.split('/')[0] !== action.payload) };
 
         default:
             return state;

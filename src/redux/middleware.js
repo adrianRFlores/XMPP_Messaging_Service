@@ -18,7 +18,9 @@ import {
     SEND_MESSAGE,
     UPDATE_USER_DETAILS,
     SEND_FILE,
-    updateGroupchatMembers
+    updateGroupchatMembers,
+    addNotification,
+    REMOVE_NOTIFICATION,
 } from './actions';
 
 let clientObj;
@@ -96,7 +98,7 @@ const xmppMiddleware = store => next => action => {
 
             clientObj.on('stanza', async (stanza) => {
                 
-                //console.log(stanza);
+                console.log(stanza);
 
                 if (stanza.is('iq') && stanza.attrs.id === 'gc1') {
                     let groupchats = [];
@@ -127,7 +129,17 @@ const xmppMiddleware = store => next => action => {
                     store.dispatch(updateGroupchatMembers({ jid: stanza.attrs.from, members: items}));
                 }
 
-                if (stanza.is('presence')) {
+                if (stanza.is('presence') && stanza.attrs.type === 'subscribe') {
+                    store.dispatch(addNotification({
+                        title: 'Roster Subscription',
+                        type: 'contact',
+                        from: stanza.attrs.from,
+                        text: `${stanza.attrs.from.split('/')[0].split('@')[0]} added you to their roster.`,
+                        date: new Date().toISOString()
+                    }))
+                }
+
+                else if (stanza.is('presence')) {
 
                     if (stanza.attrs.type === 'unavailable') {
                         store.dispatch(updateUserShow(stanza.attrs.from.split('/')[0], 'unavailable'));
@@ -152,7 +164,7 @@ const xmppMiddleware = store => next => action => {
                         image = messageStanza.getChild('x').getChildText('url');
                     }
                     const body = messageStanza?.getChild('body')?.getText();
-                    //console.log(body)
+                    console.log(body)
                     if (body) {
                         let message = {
                             to: messageStanza.attrs.to,
@@ -164,6 +176,16 @@ const xmppMiddleware = store => next => action => {
                         };
                         //console.log(message);
                         store.dispatch(addMsg(message));
+                    }
+
+                    if(!forwarded) {
+                        store.dispatch(addNotification({
+                            title: 'New Message',
+                            type: 'msg',
+                            from: messageStanza.attrs.from,
+                            text: `New message from ${messageStanza.attrs.from.split('/')[0].split('@')[0]}`,
+                            date: new Date().toISOString()
+                        }))
                     }
                 }
 
@@ -342,7 +364,7 @@ const xmppMiddleware = store => next => action => {
             };
 
             break;
-            
+
         default:
             break;
     }

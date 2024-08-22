@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, useMediaQuery, Modal, TextField, Button } from "@mui/material";
+import { Box, Typography, useTheme, useMediaQuery, Modal, TextField, Button, IconButton } from "@mui/material";
 import Sidebar from "../../components/Sidebar";
 import ChatContent from "../../components/ChatContent";
 import './index.css';
@@ -9,6 +9,8 @@ import * as yup from "yup";
 import { addContact } from "../../redux/actions";
 import StatusModal from "../../components/StatusModal";
 import GroupChatContent from "../../components/GroupChatContent";
+import NotificationModal from "../../components/NotificationModal";
+import { Notifications } from "@mui/icons-material";
 
 const addContactSchema = yup.object().shape({
   user: yup.string().required("Required").min(1),
@@ -25,6 +27,7 @@ const Home = () => {
 	const [currentMessages, setCurrentMessages] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -32,6 +35,10 @@ const Home = () => {
 
   const toggleStatusModal = () => {
     setStatusModalOpen(!statusModalOpen);
+  }
+
+  const toggleNotificationsModal = () => {
+    setNotificationsModalOpen(!notificationsModalOpen);
   }
 
   const handleAddContact = (values) => {
@@ -122,6 +129,7 @@ const Home = () => {
         </Modal>
 
         <StatusModal modalOpen={statusModalOpen} toggleModal={toggleStatusModal} />
+        <NotificationModal modalOpen={notificationsModalOpen} toggleModal={toggleNotificationsModal} />
 
         <Box
           width="75%"
@@ -150,6 +158,10 @@ const Home = () => {
             />
           }
         </Box>
+
+        <IconButton onClick={toggleNotificationsModal} sx={{position: 'absolute', right: "2%", bottom: "4%", border: "1px solid rgba(255, 255, 255, 0.1)", scale: "120%"}}>
+          <Notifications />
+        </IconButton>
       </div>
     );
 };

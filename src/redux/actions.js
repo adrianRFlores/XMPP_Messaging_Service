@@ -18,7 +18,10 @@ export const UPDATE_USER_DETAILS = 'UPDATE_USER_DETAILS';
 export const SEND_FILE = 'SEND_FILE';
 export const UPDATE_GROUPCHAT = 'UPDATE_GROUPCHAT';
 export const SET_GROUPCHATS = 'SET_GROUPCHATS';
-export const UPDATE_GROUPCHAT_MEMBERS = 'UPDATE_GROUPCHAT_MEMBERS'
+export const UPDATE_GROUPCHAT_MEMBERS = 'UPDATE_GROUPCHAT_MEMBERS';
+export const ADD_NOTIFICATION = 'ADD_NOTIFICATION';
+export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION';
+export const REMOVE_MSG_NOTIFICATION = 'REMOVE_MSG_NOTIFICATION';
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -104,14 +107,29 @@ export const sendFile = (jid, file, type) => ({
 export const updateGroupchat = (groupchat) => ({
     type: UPDATE_GROUPCHAT,
     payload: groupchat,
-})
+});
 
 export const updateGroupchatMembers = (groupchat) => ({
     type: UPDATE_GROUPCHAT_MEMBERS,
     payload: groupchat,
-})
+});
 
 export const setGroupchats = (groupchats) => ({
     type: SET_GROUPCHATS,
     payload: groupchats,
-})
+});
+
+export const addNotification = (notification) => ({
+    type: ADD_NOTIFICATION,
+    payload: notification
+});
+
+export const removeNotification = (index) => ({
+    type: REMOVE_NOTIFICATION,
+    payload: [index]
+});
+
+export const removeMsgNotifications = (user) => ({
+    type: REMOVE_MSG_NOTIFICATION,
+    payload: user
+});

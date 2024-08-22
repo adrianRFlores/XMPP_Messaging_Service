@@ -8,6 +8,7 @@ import { sendMessage, sendFile } from "../redux/actions";
 const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members }) => {
     const dispatch = useDispatch();
     const images = useSelector(state => state.xmpp.images);
+    const selfImage = useSelector(state => state.xmpp.userDetails.profilePic);
     const [inputMessage, setInputMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     let membersString = members?.map(member => member.split('@')[0]).join(', ');
@@ -75,7 +76,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                     height="87.4%"
                 >
                     {messages.map((message, index) => {
-                        let isUser = message.from.split('@')[0] === currentUser;
+                        let isUser = message.ofrom.split('@')[0] === currentUser;
                         let shouldDrawDate = false;
                         let { formattedDate, formattedTime } = formatStamp(message.timestamp);
                         let userImage = isUser ? images.find(s => s.from === `${currentUser}@alumchat.lol`) : images.find(s => s.from === message.ofrom)
@@ -111,9 +112,8 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                                 }
                                 <Box display="flex"
                                     justifyContent={isUser ? "flex-end" : "flex-start"}
-                                    flexDirection={isUser ? "row-reverse" : "row"}
                                 >
-                                    <Avatar src={userImage}>{message.ofrom.split('@')[0][0]}</Avatar>
+                                    {!isUser && <Avatar src={userImage} sx={{alignSelf: "end", marginLeft: "10px"}} >{message.ofrom.split('@')[0][0]}</Avatar>}
                                     <Box
                                         key={index}
                                         maxWidth="70%"
@@ -155,6 +155,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                                             {formattedTime}
                                         </Typography>
                                     </Box>
+                                    {isUser && <Avatar src={`data:image/jpeg;base64,${selfImage}`} sx={{alignSelf: "end", marginRight: "10px"}} >{message.ofrom.split('@')[0][0]}</Avatar>}
                                 </Box>
                             </>
                         )
