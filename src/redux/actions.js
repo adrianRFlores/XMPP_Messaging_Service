@@ -22,6 +22,7 @@ export const UPDATE_GROUPCHAT_MEMBERS = 'UPDATE_GROUPCHAT_MEMBERS';
 export const ADD_NOTIFICATION = 'ADD_NOTIFICATION';
 export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION';
 export const REMOVE_MSG_NOTIFICATION = 'REMOVE_MSG_NOTIFICATION';
+export const UPDATE_USER_STATUS = 'UPDATE_USER_STATUS';
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -81,6 +82,11 @@ export const addContact = (username) => ({
 export const updateUserShow = ( jid, show ) => ({
     type: UPDATE_USER_SHOW,
     payload: [jid, show]
+});
+
+export const updateUserStatus = ( jid, status ) => ({
+    type: UPDATE_USER_STATUS,
+    payload: [jid, status]
 });
 
 export const updateUserImage = (jid, image) => ({

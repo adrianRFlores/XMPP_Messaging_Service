@@ -73,7 +73,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
                                     </Box>
                                     <Box display="flex" flexDirection="column" alignItems="flex-start">
                                         <Typography fontWeight="500" fontSize="1rem" paddingLeft="0.25rem">{user.jid.split('@')[0]}</Typography>
-                                        <Typography paddingLeft="0.25rem" fontSize="0.7rem" fontWeight="200">{user.name}</Typography>
+                                        <Typography paddingLeft="0.25rem" fontSize="0.7rem" fontWeight="200">{userStatus.statusMsg}</Typography>
                                     </Box>
                                 </Box>
                                 {newMessages && 

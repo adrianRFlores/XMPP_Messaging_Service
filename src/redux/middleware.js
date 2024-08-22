@@ -20,7 +20,7 @@ import {
     SEND_FILE,
     updateGroupchatMembers,
     addNotification,
-    REMOVE_NOTIFICATION,
+    updateUserStatus
 } from './actions';
 
 let clientObj;
@@ -145,6 +145,10 @@ const xmppMiddleware = store => next => action => {
                         store.dispatch(updateUserShow(stanza.attrs.from.split('/')[0], 'unavailable'));
                     } else {
                         store.dispatch(updateUserShow(stanza.attrs.from.split('/')[0], stanza.getChildText('show') || 'chat' ));
+                    }
+
+                    if (stanza.getChildText('status')) {
+                        store.dispatch(updateUserStatus(stanza.attrs.from.split('/')[0], stanza.getChildText('status')));
                     }
 
                 }

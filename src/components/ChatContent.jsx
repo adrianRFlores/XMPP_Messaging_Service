@@ -8,7 +8,9 @@ import { sendMessage, sendFile } from "../redux/actions";
 const ChatContent = ({ messages, currentUser, selectedUser }) => {
     const dispatch = useDispatch();
     const images = useSelector(state => state.xmpp.images);
+    const roster = useSelector(state => state.xmpp.roster);
     const userImage = images.find(s => s.from === selectedUser);
+    const user = roster.find(s => s.jid === selectedUser);
     const [inputMessage, setInputMessage] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
 
@@ -63,6 +65,7 @@ const ChatContent = ({ messages, currentUser, selectedUser }) => {
                 <Box height="12.6%" borderBottom="1px solid rgba(255, 255, 255, 0.1)" padding="0.5rem 0" display="flex" alignItems="center" gap="1rem" p="0 1rem">
                     <Avatar sx={{ width: "match-parent", height: "match-parent"}} src={`data:image/jpeg;base64,${userImage?.image}`}>{selectedUser.split('@')[0][0]}</Avatar>
                     <Typography fontWeight="500" fontSize="1.2rem">{selectedUser.split('@')[0]}</Typography>
+                    {user.name && <Typography fontWeight="300" fontSize="0.8rem">{user.name}</Typography>}
                 </Box>
                 <Box
                     display="flex"

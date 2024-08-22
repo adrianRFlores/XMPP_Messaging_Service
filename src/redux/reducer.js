@@ -17,7 +17,8 @@ import {
     SET_GROUPCHATS,
     ADD_NOTIFICATION,
     REMOVE_NOTIFICATION,
-    REMOVE_MSG_NOTIFICATION
+    REMOVE_MSG_NOTIFICATION,
+    UPDATE_USER_STATUS
 } from './actions';
 
 const initialState = {
@@ -72,6 +73,19 @@ const xmppReducer = (state = initialState, action) => {
                 : [...state.status, { from: jid, status: newStatus }];
         
             return { ...state, status: updatedStatus };
+
+        case UPDATE_USER_STATUS:
+            let [jidMsg, newMsg] = action.payload;
+            
+            let existingUserStatus = state.status.find(user => user.from === jidMsg);
+        
+            let updatedStatusMsg = existingUserStatus
+                ? state.status.map(user =>
+                    user.from === jidMsg ? { ...user, statusMsg: newMsg } : user
+                    )
+                : [...state.status, { from: jidMsg, status: newStatus }];
+        
+            return { ...state, status: updatedStatusMsg };
             
         case UPDATE_USER_IMAGE:
             let [jidImg, newImg] = action.payload;
