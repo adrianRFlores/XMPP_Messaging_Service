@@ -11,6 +11,7 @@ import StatusModal from "../../components/StatusModal";
 import GroupChatContent from "../../components/GroupChatContent";
 import NotificationModal from "../../components/NotificationModal";
 import { Notifications } from "@mui/icons-material";
+import { StyledBadge } from "../../components/StyledBadge";
 
 const addContactSchema = yup.object().shape({
   user: yup.string().required("Required").min(1),
@@ -22,6 +23,7 @@ const Home = () => {
 	const messages = useSelector(state => state.xmpp.messages);
 	const username = useSelector(state => state.xmpp.userDetails.username);
   const groupchats = useSelector(state => state.xmpp.groupchats);
+  const notifications = useSelector(state => state.xmpp.notifications);
 
 	const [currentTab, setCurrentTab] = useState('');
 	const [currentMessages, setCurrentMessages] = useState([]);
@@ -159,7 +161,17 @@ const Home = () => {
           }
         </Box>
 
-        <IconButton onClick={toggleNotificationsModal} sx={{position: 'absolute', right: "2%", bottom: "4%", border: "1px solid rgba(255, 255, 255, 0.1)", scale: "120%"}}>
+        <IconButton 
+          onClick={toggleNotificationsModal} 
+          sx={{
+            position: 'absolute',
+            right: "2%",
+            bottom: "4%",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            scale: "120%",
+            boxShadow: notifications.find(s => s.type === 'contact') ? "0px 0px 20px rgba(255, 255, 255, 0.3)" : ""
+          }}
+        >
           <Notifications />
         </IconButton>
       </div>

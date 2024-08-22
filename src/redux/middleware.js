@@ -27,6 +27,8 @@ let clientObj;
 
 let pendingFile;
 
+const notificationSound = new Audio('../public/notification.wav');
+
 const xmppMiddleware = store => next => action => {
 
     switch (action.type) {
@@ -137,6 +139,11 @@ const xmppMiddleware = store => next => action => {
                         text: `${stanza.attrs.from.split('/')[0].split('@')[0]} added you to their roster.`,
                         date: new Date().toISOString()
                     }))
+
+                    if(!document.hasFocus()) {
+                        notificationSound.play();
+                    }
+
                 }
 
                 else if (stanza.is('presence')) {
@@ -190,6 +197,11 @@ const xmppMiddleware = store => next => action => {
                             text: `New message from ${messageStanza.attrs.from.split('/')[0].split('@')[0]}`,
                             date: new Date().toISOString()
                         }))
+
+                        if(!document.hasFocus()) {
+                            notificationSound.play();
+                        }
+
                     }
                 }
 
