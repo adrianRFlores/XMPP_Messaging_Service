@@ -26,7 +26,7 @@ let clientObj;
 
 let pendingFile;
 
-const notificationSound = new Audio('../public/notification.wav');
+const notificationSound = new Audio('/notification.wav');
 
 const xmppMiddleware = store => next => action => {
 

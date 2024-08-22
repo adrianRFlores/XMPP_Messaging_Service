@@ -11,16 +11,18 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { connectXmpp, disconnectXmpp } from '../../redux/actions';
+import { disconnectXmpp, xmppError } from '../../redux/actions';
 
 const registerSchema = yup.object().shape({
     username: yup.string().required("Required"),
     password: yup.string().required("Required"),
+    name: yup.string()
 });
 
 const initialValuesRegister = {
     username: "",
     password: "",
+    name: ""
 };
 
 const Form = () => {
@@ -28,6 +30,7 @@ const Form = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { authenticated, error } = useSelector(state => state.xmpp);
+    let autherror = false;
 
     useEffect(() => {
 		if (authenticated) {
@@ -36,48 +39,69 @@ const Form = () => {
     }, [authenticated, navigate]);
 
     const register = async (values, onSubmitProps) => {
-		console.log(values);
-	
-		let clientObj = client({
-			service: 'ws://alumchat.lol:7070/ws/',
-			domain: 'alumchat.lol'
-		});
-	
-		clientObj.on('connect', async (address) => {
-			console.log('Connected to server:', address);
-	
-			try {
-				await clientObj.send(
-					xml('iq', { type: 'set', id: 'reg1' },
-						xml('query', { xmlns: 'jabber:iq:register' },
-							xml('username', {}, values.username),
-							xml('password', {}, values.password)
-						)
-					)
-				);
-	
-			} catch (err) {
-				console.error('Registration error:', err);
-			}
-	
-			// Stop the client after registration
-			clientObj.stop();
-		});
-	
-		clientObj.on('error', (err) => {
-			console.error('Connection Error:', err);
-			clientObj.send(
-				xml('iq', { type: 'set', id: 'reg1' },
-					xml('query', { xmlns: 'jabber:iq:register' },
-						xml('username', {}, values.username),
-						xml('password', {}, values.password)
-					)
-				)
-			);
-		});
-	
-		clientObj.start().catch(console.error);
-	};
+      console.log(values);
+  
+      let clientObj = client({
+          service: 'ws://alumchat.lol:7070/ws/',
+          domain: 'alumchat.lol',
+          username: 'registerbot',
+          password: 'registerbot'
+      });
+  
+      clientObj.on('online', async (address) => {
+  
+        // Wait for the stream to be ready before sending the registration request
+        await clientObj.send(
+            xml('iq', { type: 'set', id: 'reg1' },
+                xml('query', { xmlns: 'jabber:iq:register' },
+                    xml('username', {}, values.username),
+                    xml('password', {}, values.password),
+                    xml('name', {}, values.name ? values.name : '')
+                )
+            )
+        ).catch((err) => {
+            console.error('Registration error:', err);
+            dispatch(xmppError({
+                message: err.message,
+                stack: err.stack,
+                name: err.name,
+            }));
+        });
+      });
+  
+      clientObj.on('error', (err) => {
+          console.error('Connection Error:', err);
+          dispatch(xmppError({
+              message: err.message,
+              stack: err.stack,
+              name: err.name,
+          }));
+      });
+
+      clientObj.on('stanza', (stanza) => {
+        console.log(stanza)
+        if (stanza.attrs.type === 'result') {
+            // Stop the client after registration
+            clientObj.stop();
+            onSubmitProps.setSubmitting(false);
+            if (!autherror) {
+              dispatch(disconnectXmpp());
+              alert('Registration Successful! Please log in to continue.');
+              navigate('/');
+            }
+        } else if (stanza.attrs.type === 'error') {
+            dispatch(xmppError({
+                message: stanza.getChildText('conflict'),
+                stack: '',
+                name: stanza.getChild('error').code,
+            }));
+            onSubmitProps.setSubmitting(false);
+            clientObj.stop();
+        }
+      })
+  
+      clientObj.start().catch(console.error);
+  };
 	
     
     const handleFormSubmit = async (values, onSubmitProps) => {
@@ -116,6 +140,16 @@ const Form = () => {
                   onChange={handleChange}
                   value={values.username}
                   name="username"
+                  error={Boolean(touched.username) && Boolean(errors.username)}
+                  helperText={touched.username && errors.username}
+                  sx={{ gridColumn: "span 4" }}
+                />
+                <TextField
+                  label="Name"
+                  onBlur={handleBlur}
+                  onChange={handleChange}
+                  value={values.name}
+                  name="name"
                   error={Boolean(touched.username) && Boolean(errors.username)}
                   helperText={touched.username && errors.username}
                   sx={{ gridColumn: "span 4" }}

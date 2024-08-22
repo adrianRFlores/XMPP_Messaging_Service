@@ -28,6 +28,7 @@ const Form = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { authenticated, error } = useSelector(state => state.xmpp);
+  
 
 	useEffect(() => {
         if (authenticated) {
