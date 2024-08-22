@@ -7,6 +7,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import { themeSettings } from "./theme";
 import './App.css';
+import Register from './pages/Register';
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
             <CssBaseline />
             <Routes>
               <Route path='/' element={<Login />} />
+              <Route path='/register' element={<Register />} />
               <Route path='/home' element={authenticated ? <Home /> : <Navigate to="/" />} />
             </Routes>
           </ThemeProvider>

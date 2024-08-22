@@ -125,7 +125,7 @@ const Form = () => {
                   </Typography>
                   <Typography
                     onClick={() => {
-                      resetForm();
+                      navigate('/register');
                     }}
                     sx={{
                       textDecoration: "underline",

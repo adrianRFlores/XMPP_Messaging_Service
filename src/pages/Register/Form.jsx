@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { client, xml } from '@xmpp/client';
 import {
   Box,
   Button,
   TextField,
-  useMediaQuery,
   Typography,
   useTheme,
 } from "@mui/material";
@@ -13,13 +13,13 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { connectXmpp, disconnectXmpp } from '../../redux/actions';
 
-const loginSchema = yup.object().shape({
-    address: yup.string().email("Invalid address").required("Required"),
+const registerSchema = yup.object().shape({
+    username: yup.string().required("Required"),
     password: yup.string().required("Required"),
 });
 
-const initialValuesLogin = {
-    address: "",
+const initialValuesRegister = {
+    username: "",
     password: "",
 };
 
@@ -29,36 +29,66 @@ const Form = () => {
     const navigate = useNavigate();
     const { authenticated, error } = useSelector(state => state.xmpp);
 
-	useEffect(() => {
-        if (authenticated) {
-            navigate('/home');
-        }
+    useEffect(() => {
+		if (authenticated) {
+			navigate('/home');
+		}
     }, [authenticated, navigate]);
 
-    const login = async (values, onSubmitProps) => {
-
-      console.log(values)
-
-      const credentials = {
-		username: values.address,
-		password: values.password,
-		domain: 'alumchat.lol',
-		websocketURL: 'ws://alumchat.lol:7070/ws/'
-      }
-
-      dispatch(connectXmpp(credentials));
-
-    };
+    const register = async (values, onSubmitProps) => {
+		console.log(values);
+	
+		let clientObj = client({
+			service: 'ws://alumchat.lol:7070/ws/',
+			domain: 'alumchat.lol'
+		});
+	
+		clientObj.on('connect', async (address) => {
+			console.log('Connected to server:', address);
+	
+			try {
+				await clientObj.send(
+					xml('iq', { type: 'set', id: 'reg1' },
+						xml('query', { xmlns: 'jabber:iq:register' },
+							xml('username', {}, values.username),
+							xml('password', {}, values.password)
+						)
+					)
+				);
+	
+			} catch (err) {
+				console.error('Registration error:', err);
+			}
+	
+			// Stop the client after registration
+			clientObj.stop();
+		});
+	
+		clientObj.on('error', (err) => {
+			console.error('Connection Error:', err);
+			clientObj.send(
+				xml('iq', { type: 'set', id: 'reg1' },
+					xml('query', { xmlns: 'jabber:iq:register' },
+						xml('username', {}, values.username),
+						xml('password', {}, values.password)
+					)
+				)
+			);
+		});
+	
+		clientObj.start().catch(console.error);
+	};
+	
     
     const handleFormSubmit = async (values, onSubmitProps) => {
-        login(values, onSubmitProps);
+      register(values, onSubmitProps);
     };
 
     return (
         <Formik
           onSubmit={handleFormSubmit}
-          initialValues={initialValuesLogin}
-          validationSchema={loginSchema}
+          initialValues={initialValuesRegister}
+          validationSchema={registerSchema}
         >
           {({
             values,
@@ -81,13 +111,13 @@ const Form = () => {
               >
     
                 <TextField
-                  label="XMPP Address"
+                  label="Username"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.address}
-                  name="address"
-                  error={Boolean(touched.address) && Boolean(errors.address)}
-                  helperText={touched.address && errors.address}
+                  value={values.username}
+                  name="username"
+                  error={Boolean(touched.username) && Boolean(errors.username)}
+                  helperText={touched.username && errors.username}
                   sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
@@ -102,7 +132,7 @@ const Form = () => {
                   sx={{ gridColumn: "span 4" }}
                 />
               </Box>
-			  {error && <Box>Login failed: {error.message}</Box>}
+			        {error && <Box>Register failed: {error.message}</Box>}
     
               {/* BUTTONS */}
               <Box>
@@ -117,15 +147,15 @@ const Form = () => {
                     "&:hover": { color: palette.primary.main },
                   }}
                 >
-                  LOGIN
+                  Register
                 </Button>
                 <Box sx={{flexDirection: "column"}}>
                   <Typography>
-                    Don't have an account?
+                    Already have an account?
                   </Typography>
                   <Typography
                     onClick={() => {
-                      resetForm();
+                      navigate('/');
                     }}
                     sx={{
                       textDecoration: "underline",
@@ -135,7 +165,7 @@ const Form = () => {
                         color: palette.primary.light,
                       },
                     }}>
-                    Sign up here
+                    Log In
                   </Typography>
                 </Box>
                 

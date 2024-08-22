@@ -1,5 +1,4 @@
 import { client, xml } from '@xmpp/client';
-import debug from '@xmpp/debug'
 import {
     CONNECT_XMPP,
     DISCONNECT_XMPP,
@@ -330,6 +329,8 @@ const xmppMiddleware = store => next => action => {
 
             clientObj.send(iq);
 
+            break;
+
         case SEND_MESSAGE:
             let message = xml('message', {
                 to: action.payload[0],
@@ -352,6 +353,7 @@ const xmppMiddleware = store => next => action => {
             console.log(message)
 
             store.dispatch(addMsg(message));
+            break;
 
         case UPDATE_USER_DETAILS:
             clientObj.send(xml('presence', {},

@@ -2,7 +2,7 @@ import { Box, Typography, useTheme, useMediaQuery } from "@mui/material";
 import Form from "./Form";
 import './index.css';
 
-const Login = () => {
+const Register = () => {
   const theme = useTheme();
   return (
     <div className="background">
@@ -17,7 +17,7 @@ const Login = () => {
         textAlign="center"
       >
         <Typography fontWeight="600" fontSize="2.5rem" color="primary" p="0 0 1.5rem 0">
-            Gajimbo
+            Register
         </Typography>
 
         <Form />
@@ -27,4 +27,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
