@@ -42,7 +42,7 @@ export const xmppDisconnected = () => ({
 });
 
 export const xmppUnregister = () => ({
-    type: XMPP_UNREGISTER
+    type: XMPP_UNREGISTER,
 });
 
 export const xmppError = (error) => ({

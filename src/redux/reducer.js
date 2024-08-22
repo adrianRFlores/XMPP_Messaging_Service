@@ -18,7 +18,8 @@ import {
     ADD_NOTIFICATION,
     REMOVE_NOTIFICATION,
     REMOVE_MSG_NOTIFICATION,
-    UPDATE_USER_STATUS
+    UPDATE_USER_STATUS,
+    DISCONNECT_XMPP
 } from './actions';
 
 const initialState = {
@@ -43,8 +44,8 @@ const xmppReducer = (state = initialState, action) => {
     switch (action.type) {
         case XMPP_CONNECTED:
             return { ...state, connected: true, authenticated: true, error: null };
-        case XMPP_DISCONNECTED:
-            return { ...state, connected: false, authenticated: false };
+        case DISCONNECT_XMPP:
+            return initialState;
         case XMPP_UNREGISTER:
             return initialState;
         case XMPP_ERROR:

@@ -2,7 +2,7 @@ import { Box, Typography, useTheme, IconButton, Icon, Avatar} from "@mui/materia
 import { PersonAddAlt1Rounded, LogoutRounded, DeleteTwoTone } from "@mui/icons-material";
 import { StyledBadge } from './StyledBadge';
 import { useSelector, useDispatch } from 'react-redux';
-import { xmppUnregister } from "../redux/actions";
+import { disconnectXmpp, xmppUnregister } from "../redux/actions";
 import { useNavigate } from "react-router-dom";
 
 const colorMapping = {
@@ -22,6 +22,10 @@ const Options = ({ setModalOpen, toggleStatusModal }) => {
     const unregister = () => {
         dispatch(xmppUnregister());
         navigate('/');
+    }
+
+    const disconnect = () => {
+        dispatch(disconnectXmpp());
     }
 
     return (
@@ -61,7 +65,7 @@ const Options = ({ setModalOpen, toggleStatusModal }) => {
                     <PersonAddAlt1Rounded />
                 </IconButton>
 
-                <IconButton>
+                <IconButton onClick={disconnect}>
                     <LogoutRounded />
                 </IconButton>
 
