@@ -124,7 +124,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal, setTabCreationTy
 
                 </Box>
                 <Box display="grid" gridTemplateColumns="1fr 1fr" borderTop="1px solid rgba(255, 255, 255, 0.1)">
-                    <Box borderRight="1px solid rgba(255, 255, 255, 0.1)" p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(true)}}
+                    <Box borderRight="1px solid rgba(255, 255, 255, 0.1)" p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(true); setTabCreationType(true)}}
                         sx={{
                             '&:hover': {
                                 backgroundColor: "rgba(255, 255, 255, 0.05)",
@@ -136,7 +136,7 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal, setTabCreationTy
                     >
                         <Person />
                     </Box>
-                    <Box p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(false)}}
+                    <Box p="0.5rem 0 0.3rem 0" onClick={() => {setTabType(false); setTabCreationType(false)}}
                         sx={{
                             '&:hover': {
                                 backgroundColor: "rgba(255, 255, 255, 0.05)",

@@ -39,67 +39,67 @@ const Form = () => {
     }, [authenticated, navigate]);
 
     const register = async (values, onSubmitProps) => {
-      console.log(values);
-  
-      const clientObj = client({
-        service: "ws://alumchat.lol:7070/ws/", // WebSocket service URL for XMPP server
-        domain: 'alumchat.lol',                // Domain of the XMPP server
-        sasl: ['SCRAM-SHA-1', 'PLAIN'], 
-        resource: 'gajimbo2'                 // Resource name of the client
-      });
-  
-      clientObj.on('open', async (address) => {
-  
-        // Wait for the stream to be ready before sending the registration request
-        await clientObj.send(
-            xml('iq', { type: 'set', id: 'reg1', to: 'alumchat.lol' },
-                xml('query', { xmlns: 'jabber:iq:register' },
-                    xml('username', {}, values.username),
-                    xml('password', {}, values.password),
-                    xml('name', {}, values.name ? values.name : '')
-                )
-            )
-        ).catch((err) => {
-            console.error('Registration error:', err);
-            dispatch(xmppError({
-                message: err.message,
-                stack: err.stack,
-                name: err.name,
-            }));
+      try {
+        const clientObj = client({
+          service: "ws://alumchat.lol:7070/ws",
+          resource: "xmpp-client",
+          sasl: ['SCRAM-SHA-1', 'PLAIN'],
         });
-      });
-  
-      clientObj.on('error', (err) => {
-          console.error('Connection Error:', err);
-          dispatch(xmppError({
-              message: err.message,
-              stack: err.stack,
-              name: err.name,
-          }));
-      });
+    
+        return new Promise((resolve, reject) => {
+          clientObj.on("error", (err) => {
+            if (err.code === "ECONERROR") {
+              console.error("Connection error:", err);
+              clientObj.stop();
+              clientObj.removeAllListeners();
+              reject(new Error("Error in XMPP Client"));
+            }
+          });
+    
+          clientObj.on("open", () => {
+            const iq = xml(
+              'iq',
+              { type: 'set', id: 'register-request', to: "alumchat.lol" },
+              xml('query', { xmlns: 'jabber:iq:register' },
+                xml('username', {}, values.username),
+                xml('password', {}, values.password),
+                values.name ? xml('name', {}, values.name) : null
+              )
+            );
+            clientObj.send(iq);
+          });
+    
+          clientObj.on("stanza", async (stanza) => {
 
-      clientObj.on('stanza', (stanza) => {
-        console.log(stanza)
-        if (stanza.attrs.type === 'result') {
-            // Stop the client after registration
-            onSubmitProps.setSubmitting(false);
-            dispatch(disconnectXmpp());
-            alert('Registration Successful! Please log in to continue.');
-            clientObj.stop();
-            navigate('/');
-        } else if (stanza.attrs.type === 'error') {
-            dispatch(xmppError({
-                message: stanza.getChildText('conflict'),
-                stack: '',
-                name: stanza.getChild('error').code,
-            }));
-            onSubmitProps.setSubmitting(false);
-            //clientObj.stop();
-        }
-      })
-  
-      clientObj.start().catch(console.error);
-  };
+            if (stanza.is("iq") && stanza.getAttr("id") === "register-request") {
+              await clientObj.stop();
+              clientObj.removeAllListeners();
+    
+              if (stanza.getAttr("type") === "result") {
+                resolve({ status: true, message: "Registration successful" });
+              } else if (stanza.getAttr("type") === "error") {
+                const error = stanza.getChild("error");
+                if (error?.getChild("conflict")) {
+                  reject(new Error("Error: Username already taken."));
+                } else {
+                  reject(new Error("An error occurred. Please try again!"));
+                }
+              }
+            }
+          });
+    
+          clientObj.start().catch((err) => {
+            if (!err.message.includes("invalid-mechanism")) {
+              reject(new Error("Failed to start XMPP client: " + err.message));
+            }
+          });
+        });
+      } catch (error) {
+        console.error("Error:", error);
+        throw error;
+      }
+    };
+
 	
     
     const handleFormSubmit = async (values, onSubmitProps) => {

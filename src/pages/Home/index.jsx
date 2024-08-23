@@ -30,6 +30,7 @@ const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
+  const [creationType, setCreationType] = useState(true);
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
@@ -46,6 +47,10 @@ const Home = () => {
   const handleAddContact = (values) => {
     //console.log(values);
     dispatch(addContact(values.username, 'subscribe'));
+  }
+
+  const handleCreateGroup = (values) => {
+    dispatch();
   }
 
 	useEffect(() => {
@@ -145,7 +150,7 @@ const Home = () => {
           textAlign="center"
           gridTemplateColumns="1fr 3fr"
         >
-          <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal}/>
+          <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal} setTabCreationType={setCreationType}/>
           {currentTab !== '' && !currentTab.includes('@conference') ? 
             <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab} key={currentTab}/>
             :
