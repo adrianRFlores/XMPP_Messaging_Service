@@ -170,7 +170,7 @@ const xmppMiddleware = store => next => action => {
                     const forwarded = stanza.getChild('result')?.getChild('forwarded');
                     const messageStanza = forwarded ? forwarded.getChild('message') : stanza;
                     let image = '';
-                    if (forwarded && messageStanza.getChild('x')) {
+                    if (messageStanza.getChild('x')) {
                         image = messageStanza.getChild('x').getChildText('url');
                     }
                     const body = messageStanza?.getChild('body')?.getText();
@@ -184,7 +184,7 @@ const xmppMiddleware = store => next => action => {
                             image: image,
                             ofrom: messageStanza.attrs.type === 'groupchat' ? `${messageStanza.attrs.from.split('/')[1]}@alumchat.lol` : ''
                         };
-                        //console.log(message);
+                        console.log(image);
                         store.dispatch(addMsg(message));
                     }
 
@@ -254,7 +254,7 @@ const xmppMiddleware = store => next => action => {
                                     from: `${clientObj.jid._local}@alumchat.lol`,
                                     type: pendingFile.type
                                 },
-                                    xml('body', {}, `File sent: ${pendingFile.file.name}`),
+                                    xml('body', {}, `${getUrl}`),
                                     xml('x', { xmlns: 'jabber:x:oob' },
                                         xml('url', {}, getUrl),
                                         xml('desc', {}, pendingFile.file.name)
@@ -304,22 +304,32 @@ const xmppMiddleware = store => next => action => {
             break;
 
         case XMPP_ADD_CONTACT:
+
             let iq = xml(
                 'iq',
                 { type: 'set', id: 'addroster', from: `${clientObj.jid._local}@alumchat.lol`},
                 xml('query', { xmlns: 'jabber:iq:roster' },
-                    xml('item', { jid: `${action.payload}@alumchat.lol`, subscription: 'both' } )
+                    xml('item', { jid: `${action.payload[0]}@alumchat.lol`, subscription: 'both' } )
                 )
             );
 
             clientObj.send(iq);
 
-            iq = xml('presence', { to: `${action.payload}@alumchat.lol`, type:'subscribe' },
+            iq = xml('presence', { to: `${action.payload[0]}@alumchat.lol`, type: action.payload[1]},
                 xml('status', {}, `Hola, soy ${clientObj.jid._local}.`),
                 xml('nick', "http://jabber.org/protocol/nick", clientObj.jid._local)
             )
 
             clientObj.send(iq)
+
+            if (action.payload[1] === 'subscribe') {
+                iq = xml('presence', { to: `${action.payload[0]}@alumchat.lol`, type: 'subscribed'},
+                    xml('status', {}, `Hola, soy ${clientObj.jid._local}.`),
+                    xml('nick', "http://jabber.org/protocol/nick", clientObj.jid._local)
+                )
+
+                clientObj.send(iq)
+            }
 
             iq = xml(
                 'iq',

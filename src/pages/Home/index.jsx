@@ -45,7 +45,7 @@ const Home = () => {
 
   const handleAddContact = (values) => {
     //console.log(values);
-    dispatch(addContact(values.username));
+    dispatch(addContact(values.username, 'subscribe'));
   }
 
 	useEffect(() => {
@@ -146,8 +146,7 @@ const Home = () => {
           gridTemplateColumns="1fr 3fr"
         >
           <Sidebar setCurrentTab={setCurrentTab} setModalOpen={toggleModal} setStatusModal={toggleStatusModal}/>
-          {!currentTab && <></>}
-          {currentTab && !currentTab.includes('@conference') ? 
+          {currentTab !== '' && !currentTab.includes('@conference') ? 
             <ChatContent messages={currentMessages} currentUser={username} selectedUser={currentTab} key={currentTab}/>
             :
             <GroupChatContent

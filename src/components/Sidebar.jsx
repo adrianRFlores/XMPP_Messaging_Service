@@ -35,8 +35,9 @@ const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
             flexDirection='column'
             borderRight="1px solid rgba(255, 255, 255, 0.1)"
             justifyContent="space-between"
+            sx={{overflowY:"hidden"}}
         >
-            <Box height="87%" sx={{overflowY:"hidden"}} display='flex' justifyContent="space-between" flexDirection="column">
+            <Box height="87%" sx={{overflowY:"auto"}} display='flex' justifyContent="space-between" flexDirection="column">
                 <Box display="flex" sx={{overflowY:"auto"}} flexDirection="column" width="100%">
                     {tabType && roster.map((user, index) => {
                         const userStatus = status.find(s => s.from === user.jid) || { status: "unknown" };

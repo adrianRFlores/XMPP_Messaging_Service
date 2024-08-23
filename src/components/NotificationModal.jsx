@@ -33,7 +33,7 @@ const NotificationModal = ({ modalOpen, toggleModal }) => {
     const handleNotificationAcknowledge = (index, type) => {
         
         if (type === 'add') {
-            dispatch(addContact(notifications[index].from.split('@')[0]));
+            dispatch(addContact(notifications[index].from.split('@')[0], 'subscribed'));
         }
 
         dispatch(removeNotification(index));

@@ -74,9 +74,9 @@ export const addMsg = (message) => ({
     payload: message
 });
 
-export const addContact = (username) => ({
+export const addContact = (username, type) => ({
     type: XMPP_ADD_CONTACT,
-    payload: username
+    payload: [username, type]
 });
 
 export const updateUserShow = ( jid, show ) => ({
