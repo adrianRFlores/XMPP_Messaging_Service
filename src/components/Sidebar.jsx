@@ -14,7 +14,7 @@ const colorMapping = {
     'unavailable': 'grey'
 };
 
-const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal }) => {
+const Sidebar = ({ setCurrentTab, setModalOpen, setStatusModal, setTabCreationType }) => {
     const dispatch = useDispatch();
     const roster = useSelector(state => state.xmpp.roster);
     const status = useSelector(state => state.xmpp.status);

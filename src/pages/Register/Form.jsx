@@ -41,18 +41,18 @@ const Form = () => {
     const register = async (values, onSubmitProps) => {
       console.log(values);
   
-      let clientObj = client({
-          service: 'ws://alumchat.lol:7070/ws/',
-          domain: 'alumchat.lol',
-          username: 'registerbot',
-          password: 'registerbot'
+      const clientObj = client({
+        service: "ws://alumchat.lol:7070/ws/", // WebSocket service URL for XMPP server
+        domain: 'alumchat.lol',                // Domain of the XMPP server
+        sasl: ['SCRAM-SHA-1', 'PLAIN'], 
+        resource: 'gajimbo2'                 // Resource name of the client
       });
   
-      clientObj.on('online', async (address) => {
+      clientObj.on('open', async (address) => {
   
         // Wait for the stream to be ready before sending the registration request
         await clientObj.send(
-            xml('iq', { type: 'set', id: 'reg1' },
+            xml('iq', { type: 'set', id: 'reg1', to: 'alumchat.lol' },
                 xml('query', { xmlns: 'jabber:iq:register' },
                     xml('username', {}, values.username),
                     xml('password', {}, values.password),
@@ -82,13 +82,11 @@ const Form = () => {
         console.log(stanza)
         if (stanza.attrs.type === 'result') {
             // Stop the client after registration
-            clientObj.stop();
             onSubmitProps.setSubmitting(false);
-            if (!autherror) {
-              dispatch(disconnectXmpp());
-              alert('Registration Successful! Please log in to continue.');
-              navigate('/');
-            }
+            dispatch(disconnectXmpp());
+            alert('Registration Successful! Please log in to continue.');
+            clientObj.stop();
+            navigate('/');
         } else if (stanza.attrs.type === 'error') {
             dispatch(xmppError({
                 message: stanza.getChildText('conflict'),
@@ -96,7 +94,7 @@ const Form = () => {
                 name: stanza.getChild('error').code,
             }));
             onSubmitProps.setSubmitting(false);
-            clientObj.stop();
+            //clientObj.stop();
         }
       })
   
