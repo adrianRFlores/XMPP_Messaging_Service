@@ -27,6 +27,10 @@ let clientObj;
 
 let pendingFile;
 
+let pendingRoom;
+
+let groups;
+
 const notificationSound = new Audio('/notification.wav');
 
 const xmppMiddleware = store => next => action => {
@@ -104,7 +108,7 @@ const xmppMiddleware = store => next => action => {
 
                 if (stanza.is('iq') && stanza.attrs.id === 'gc1') {
                     let groupchats = [];
-                    //console.log(stanza.getChild('query').getChild('storage').getChildren('conference'))
+
                     stanza.getChild('query').getChild('storage').getChildren('conference').map((item) => {
                         groupchats.push({
                             jid: item.attrs.jid,
@@ -125,6 +129,7 @@ const xmppMiddleware = store => next => action => {
                         clientObj.send(roomPresence); 
                     });
                     store.dispatch(setGroupchats(groupchats));
+                    groups = groupchats;
                 }
 
                 if(stanza.is('iq') && stanza.attrs.id.includes('gcDetails') && stanza.attrs.type === 'result') {
@@ -201,7 +206,7 @@ const xmppMiddleware = store => next => action => {
                             from: messageStanza.attrs.from,
                             text: `New message from ${messageStanza.attrs.from.split('/')[0].split('@')[0]}`,
                             date: new Date().toISOString()
-                        }))
+                        }));
 
                         if(!document.hasFocus()) {
                             notificationSound.play();
@@ -288,6 +293,87 @@ const xmppMiddleware = store => next => action => {
                             console.error('File upload error:', error);
                         }
                     }
+                }
+
+                if (stanza.attrs.id === 'checkRoom') {
+
+                    if(stanza.getChild('query').getChild('identity')){
+
+                        const joinRoom = xml(
+                            'presence', 
+                            { to: `${pendingRoom}@conference.alumchat.lol/${clientObj.jid.local}` },
+                            xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+                        );
+                        clientObj.send(joinRoom); 
+
+                    }
+
+                    else {
+
+                        const joinRoom = xml(
+                            'presence', 
+                            { to: `${pendingRoom}@conference.alumchat.lol/${clientObj.jid.local}` },
+                            xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+                        );
+                        clientObj.send(joinRoom);            
+            
+                        const requestConfig = xml(
+                            'iq', 
+                            { to: `${pendingRoom}@conference.alumchat.lol`, type: 'get', id: 'config1' },
+                            xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
+                        );
+                        clientObj.send(requestConfig);
+            
+                        const submitConfig = xml(
+                            'iq', 
+                            { to: `${pendingRoom}@conference.alumchat.lol`, type: 'set', id: 'config2' },
+                            xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' },
+                                xml('x', { xmlns: 'jabber:x:data', type: 'submit' },
+                                    xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'http://jabber.org/protocol/muc#roomconfig')),
+                                    xml('field', { var: 'muc#roomconfig_roomname', type: "text-single", label: "Room Name" }, xml('value', {}, pendingRoom)),
+                                    xml('field', { var: 'muc#roomconfig_publicroom', type: "text-single", label: "List Room in Directory" }, xml('value', {}, 1)),
+                                    xml('field', { var: 'muc#roomconfig_persistentroom', type: "text-single", label: "Room is Persistent" }, xml('value', {}, 1)),
+                                )
+                            )
+                        );
+                        await clientObj.sendReceive(submitConfig);
+
+                    }
+            
+                    const conferences = [
+                        ...groups.map((group) => 
+                            xml('conference', { autojoin: 'true', jid: group.jid })
+                        ),
+                        xml('conference', { autojoin: 'true', jid: `${pendingRoom}@conference.alumchat.lol` })
+                    ];
+                    
+                    const addBookmark = xml('iq', { type: 'set', id: 'bookmark1' },
+                        xml('pubsub', { xmlns: 'http://jabber.org/protocol/pubsub' },
+                            xml('publish', { node: 'storage:bookmarks' },
+                                xml('item', { id: 'current' }, 
+                                    xml('storage', { xmlns: 'storage:bookmarks' }, ...conferences)
+                                )
+                            ),
+                            xml('publish-options', {}, 
+                                xml('x', { xmlns: 'jabber:x:data', type: 'submit' },
+                                    xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'http://jabber.org/protocol/pubsub#publish-options')),
+                                    xml('field', { var: 'pubsub#persist_items' }, xml('value', {}, '1')),
+                                    xml('field', { var: 'pubsub#access_model' }, xml('value', {}, 'whitelist'))
+                                )
+                            )
+                        )
+                    );
+                    
+                    await clientObj.sendReceive(addBookmark);
+        
+                    const bookmarks2 = xml('iq', { type: 'get', id: 'gc1' }, 
+                        xml('query', 'jabber:iq:private', xml('storage', 'storage:bookmarks'))
+                    );
+        
+                    clientObj.send(bookmarks2);
+
+                    pendingRoom = '';
+
                 }
 
             });
@@ -419,49 +505,13 @@ const xmppMiddleware = store => next => action => {
 
         case CREATE_GROUP:
 
-            const joinRoom = xml(
-                'presence', 
-                { to: `${action.payload}@conference.alumchat.com/${clientObj.jid.local}` },
-                xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+            const checkRoom = xml('iq', { to: `${action.payload}@conference.alumchat.lol`, type: 'get', id: 'checkRoom' },
+                xml('query', 'http://jabber.org/protocol/disco#info')
             );
-            clientObj.send(joinRoom);            
 
-            const requestConfig = xml(
-                'iq', 
-                { to: `${action.payload}@conference.alumchat.com`, type: 'get', id: 'config1' },
-                xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
-            );
-            clientObj.send(requestConfig);
+            clientObj.send(checkRoom);
 
-            const submitConfig = xml(
-                'iq', 
-                { to: `${action.payload}@conference.alumchat.com`, type: 'set', id: 'config2' },
-                xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' },
-                    xml('x', { xmlns: 'jabber:x:data', type: 'submit' },
-                        xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'http://jabber.org/protocol/muc#roomconfig')),
-                        xml('field', { var: 'muc#roomconfig_roomname', type: "text-single", label: "Room Name" }, xml('value', {}, action.payload)),
-                        // Add more configuration fields here as needed
-                    )
-                )
-            );
-            clientObj.send(submitConfig);
-
-            const bookmarkRoom = xml(
-                'iq', 
-                { type: 'set', id: 'bookmark1' },
-                xml('query', { xmlns: 'jabber:iq:private' },
-                    xml('storage', { xmlns: 'storage:bookmarks' },
-                        xml('conference', { name: action.payload, autojoin: 'true', jid: `${action.payload}@conference.alumchat.com` })
-                    )
-                )
-            );
-            clientObj.send(bookmarkRoom);
-
-            const bookmarks2 = xml('iq', { type: 'get', id: 'gc1' }, 
-                    xml('query', 'jabber:iq:private', xml('storage', 'storage:bookmarks'))
-                )
-
-            clientObj.send(bookmarks2);
+            pendingRoom = action.payload;
 
         default:
             break;

@@ -52,7 +52,8 @@ const Form = () => {
               console.error("Connection error:", err);
               clientObj.stop();
               clientObj.removeAllListeners();
-              reject(new Error("Error in XMPP Client"));
+              dispatch(xmppError({ message: 'Client Error' }));
+              reject(new Error("Client Error"));
             }
           });
     
@@ -76,13 +77,16 @@ const Form = () => {
               clientObj.removeAllListeners();
     
               if (stanza.getAttr("type") === "result") {
+                dispatch(xmppError(undefined));
                 resolve({ status: true, message: "Registration successful" });
               } else if (stanza.getAttr("type") === "error") {
                 const error = stanza.getChild("error");
                 if (error?.getChild("conflict")) {
-                  reject(new Error("Error: Username already taken."));
+                  dispatch(xmppError({ message: 'User already exists' }));
+                  reject(new Error('User already exists'));
                 } else {
-                  reject(new Error("An error occurred. Please try again!"));
+                  dispatch(xmppError({ message: 'Unknown Error' }));
+                  reject(new Error('Unknown Error'));
                 }
               }
             }
@@ -90,20 +94,22 @@ const Form = () => {
     
           clientObj.start().catch((err) => {
             if (!err.message.includes("invalid-mechanism")) {
+              dispatch(xmppError({ message: err.message }))
               reject(new Error("Failed to start XMPP client: " + err.message));
             }
           });
         });
       } catch (error) {
-        console.error("Error:", error);
-        throw error;
+        console.error(error);
       }
     };
 
-	
-    
     const handleFormSubmit = async (values, onSubmitProps) => {
       register(values, onSubmitProps);
+      if  (!error) {
+        alert('Registration Successful.');
+        navigate('/');
+      }
     };
 
     return (
