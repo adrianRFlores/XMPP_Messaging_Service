@@ -56,8 +56,17 @@ const xmppReducer = (state = initialState, action) => {
             return { ...state, userDetails: action.payload };
         case SET_ROSTER:
             return { ...state, roster: action.payload};
-        case ADD_MSG:
-            return { ...state, messages: [...state.messages, action.payload] };
+        case ADD_MSG: {
+            const exists = state.messages.some(msg => msg.timestamp === action.payload.timestamp);
+            if (exists) {
+                return { ...state, messages: [...state.messages].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)) };
+            }
+            return {
+                ...state,
+                messages: [...state.messages, action.payload].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+            };
+        }
+            
         case XMPP_ADD_CONTACT:
             return state;
         case UPDATE_USER_SHOW:

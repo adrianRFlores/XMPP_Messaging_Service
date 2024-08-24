@@ -23,6 +23,7 @@ export const ADD_NOTIFICATION = 'ADD_NOTIFICATION';
 export const REMOVE_NOTIFICATION = 'REMOVE_NOTIFICATION';
 export const REMOVE_MSG_NOTIFICATION = 'REMOVE_MSG_NOTIFICATION';
 export const UPDATE_USER_STATUS = 'UPDATE_USER_STATUS';
+export const CREATE_GROUP = 'CREATE_GROUP';
 
 export const connectXmpp = (credentials) => ({
     type: CONNECT_XMPP,
@@ -139,3 +140,8 @@ export const removeMsgNotifications = (user) => ({
     type: REMOVE_MSG_NOTIFICATION,
     payload: user
 });
+
+export const createGroup = (group) => ({
+    type: CREATE_GROUP,
+    payload: group
+})

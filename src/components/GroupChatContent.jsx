@@ -47,14 +47,15 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
     const handleSend = () => {
         if (inputMessage) {
             console.log(selectedGroup)
-            //dispatch(sendMessage(selectedUser, inputMessage, 'chat'));
+            dispatch(sendMessage(selectedGroup, inputMessage, 'groupchat'));
             setInputMessage('')
         }
         if (selectedFile) {
 
-            //dispatch(sendFile(selectedGroup, selectedFile));
+            dispatch(sendFile(selectedGroup, selectedFile, 'groupchat'));
             console.log('File to upload:', selectedFile);
             setSelectedFile(null);
+            document.getElementById('file-input').value = '';
         }
     }
 

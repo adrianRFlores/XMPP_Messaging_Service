@@ -19,7 +19,8 @@ import {
     SEND_FILE,
     updateGroupchatMembers,
     addNotification,
-    updateUserStatus
+    updateUserStatus,
+    CREATE_GROUP
 } from './actions';
 
 let clientObj;
@@ -116,6 +117,12 @@ const xmppMiddleware = store => next => action => {
                         clientObj.send(xml('iq', { type: 'get', id: `gcOccupants-${item.attrs.jid.split('@')[0]}`, to: item.attrs.jid }, 
                             xml('query', 'http://jabber.org/protocol/disco#items')
                         ));
+                        const roomPresence = xml(
+                            'presence', 
+                            { to: `${item.attrs.jid}/${clientObj.jid.local}` },
+                            xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+                        );
+                        clientObj.send(roomPresence); 
                     });
                     store.dispatch(setGroupchats(groupchats));
                 }
@@ -166,7 +173,7 @@ const xmppMiddleware = store => next => action => {
                 }
 
                 else if (stanza.is('message')) {
-                    console.log(stanza)
+                    console.log('message', stanza)
                     const forwarded = stanza.getChild('result')?.getChild('forwarded');
                     const messageStanza = forwarded ? forwarded.getChild('message') : stanza;
                     let image = '';
@@ -174,7 +181,7 @@ const xmppMiddleware = store => next => action => {
                         image = messageStanza.getChild('x').getChildText('url');
                     }
                     const body = messageStanza?.getChild('body')?.getText();
-                    console.log(body)
+
                     if (body) {
                         let message = {
                             to: messageStanza.attrs.to,
@@ -184,7 +191,6 @@ const xmppMiddleware = store => next => action => {
                             image: image,
                             ofrom: messageStanza.attrs.type === 'groupchat' ? `${messageStanza.attrs.from.split('/')[1]}@alumchat.lol` : ''
                         };
-                        console.log(image);
                         store.dispatch(addMsg(message));
                     }
 
@@ -262,16 +268,19 @@ const xmppMiddleware = store => next => action => {
                                 );
         
                                 clientObj.send(message);
-        
-                                const localMessage = {
-                                    to: pendingFile.recipient,
-                                    from: `${clientObj.jid._local}@alumchat.lol`,
-                                    timestamp: new Date().toISOString(),
-                                    content: `${getUrl}`, 
-                                    image: `${getUrl}`
-                                };
-        
-                                store.dispatch(addMsg(localMessage));
+                                
+                                if (pendingFile.type !== 'groupchat') {
+                                    const localMessage = {
+                                        to: pendingFile.recipient,
+                                        from: `${clientObj.jid._local}@alumchat.lol`,
+                                        timestamp: new Date().toISOString(),
+                                        content: `${getUrl}`, 
+                                        image: `${getUrl}`
+                                    };
+            
+                                    store.dispatch(addMsg(localMessage));
+                                }
+
                             } else {
                                 console.error('File upload failed:', response.statusText);
                             }
@@ -342,7 +351,17 @@ const xmppMiddleware = store => next => action => {
             break;
 
         case SEND_MESSAGE:
-            let message = xml('message', {
+
+            if (action.payload[2] === 'groupchat') {
+                
+                let presenceStanza = xml('presence', {
+                    to: `${action.payload[0]}/${clientObj.jid._local}`
+                });
+                clientObj.send(presenceStanza);
+                
+            }
+
+            let messageiq = xml('message', {
                 to: action.payload[0],
                 from: `${clientObj.jid._local}@alumchat.lol`,
                 type: action.payload[2]
@@ -350,19 +369,24 @@ const xmppMiddleware = store => next => action => {
                 xml('body', {}, action.payload[1])
             )
 
-            clientObj.send(message);
+            clientObj.send(messageiq);
 
-            message = {
+            let newLocalMessage;
+
+            if (action.payload[2] !== 'groupchat') {
+
+                newLocalMessage = {
                     to: action.payload[0],
                     from: `${clientObj.jid._local}@alumchat.lol`,
                     timestamp: new Date().toISOString(),
                     content: action.payload[1],
                     image: ''
-            };
+                };
 
-            console.log(message)
+                store.dispatch(addMsg(newLocalMessage));
 
-            store.dispatch(addMsg(message));
+            }
+
             break;
 
         case UPDATE_USER_DETAILS:
@@ -377,7 +401,7 @@ const xmppMiddleware = store => next => action => {
             const recipient = action.payload[0];
             const file = action.meta;
 
-            console.log(file)
+            //console.log(file)
         
             const requestUploadSlotIq = xml('iq', { type: 'get', id: 'uploadSlot1', to: 'httpfileupload.alumchat.lol', xmlns: 'jabber:client' },
                 xml('request', { xmlns: 'urn:xmpp:http:upload:0', filename: file.file.name, size: file.file.size, 'content-type': file.file.type})
@@ -392,6 +416,52 @@ const xmppMiddleware = store => next => action => {
             };
 
             break;
+
+        case CREATE_GROUP:
+
+            const joinRoom = xml(
+                'presence', 
+                { to: `${action.payload}@conference.alumchat.com/${clientObj.jid.local}` },
+                xml('x', { xmlns: 'http://jabber.org/protocol/muc' })
+            );
+            clientObj.send(joinRoom);            
+
+            const requestConfig = xml(
+                'iq', 
+                { to: `${action.payload}@conference.alumchat.com`, type: 'get', id: 'config1' },
+                xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' })
+            );
+            clientObj.send(requestConfig);
+
+            const submitConfig = xml(
+                'iq', 
+                { to: `${action.payload}@conference.alumchat.com`, type: 'set', id: 'config2' },
+                xml('query', { xmlns: 'http://jabber.org/protocol/muc#owner' },
+                    xml('x', { xmlns: 'jabber:x:data', type: 'submit' },
+                        xml('field', { var: 'FORM_TYPE', type: 'hidden' }, xml('value', {}, 'http://jabber.org/protocol/muc#roomconfig')),
+                        xml('field', { var: 'muc#roomconfig_roomname', type: "text-single", label: "Room Name" }, xml('value', {}, action.payload)),
+                        // Add more configuration fields here as needed
+                    )
+                )
+            );
+            clientObj.send(submitConfig);
+
+            const bookmarkRoom = xml(
+                'iq', 
+                { type: 'set', id: 'bookmark1' },
+                xml('query', { xmlns: 'jabber:iq:private' },
+                    xml('storage', { xmlns: 'storage:bookmarks' },
+                        xml('conference', { name: action.payload, autojoin: 'true', jid: `${action.payload}@conference.alumchat.com` })
+                    )
+                )
+            );
+            clientObj.send(bookmarkRoom);
+
+            const bookmarks2 = xml('iq', { type: 'get', id: 'gc1' }, 
+                    xml('query', 'jabber:iq:private', xml('storage', 'storage:bookmarks'))
+                )
+
+            clientObj.send(bookmarks2);
 
         default:
             break;
