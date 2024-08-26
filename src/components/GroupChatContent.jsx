@@ -30,7 +30,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
     const [selectedFile, setSelectedFile] = useState(null);
 
     // Create a string of group member usernames
-    let membersString = members?.map(member => member.split('@')[0]).join(', ');
+    let membersString = members?.map(member => member?.split('@')[0]).join(', ');
 
     /**
      * Handles file input change event, updates the selected file state.
@@ -135,7 +135,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                     height="87.4%"
                 >
                     {messages.map((message, index) => {
-                        let isUser = message.ofrom.split('@')[0] === currentUser;
+                        let isUser = message.ofrom?.split('@')[0] === currentUser;
                         let shouldDrawDate = false;
                         let { formattedDate, formattedTime } = formatStamp(message.timestamp);
                         let userImage = isUser
@@ -178,7 +178,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                                     {/* Display avatar for non-user messages */}
                                     {!isUser && (
                                         <Avatar src={userImage} sx={{ alignSelf: "end", marginLeft: "10px" }}>
-                                            {message.ofrom.split('@')[0][0]}
+                                            {message.ofrom?.split('@')[0][0]}
                                         </Avatar>
                                     )}
                                     <Box
@@ -197,7 +197,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                                         }}
                                     >
                                         <Typography fontWeight="500" textAlign={isUser ? "right" : "left"}>
-                                            {message.ofrom.split('@')[0]}
+                                            {message.ofrom?.split('@')[0]}
                                         </Typography>
                                         {message.image !== '' ? (
                                             <Box
@@ -229,7 +229,7 @@ const GroupChatContent = ({ messages, currentUser, selectedGroup, name, members 
                                     {/* Display avatar for user messages */}
                                     {isUser && (
                                         <Avatar src={`data:image/jpeg;base64,${selfImage}`} sx={{ alignSelf: "end", marginRight: "10px" }}>
-                                            {message.ofrom.split('@')[0][0]}
+                                            {message.ofrom?.split('@')[0][0]}
                                         </Avatar>
                                     )}
                                 </Box>
