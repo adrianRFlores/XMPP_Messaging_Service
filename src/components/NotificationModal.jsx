@@ -1,14 +1,22 @@
+// JSDoc made by ChatGPT
+
 import {
     Box,
     Typography,
     Modal,
     IconButton,
 } from "@mui/material";
-import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { removeNotification, addContact } from "../redux/actions";
 import { Close, PersonAddAlt1 } from "@mui/icons-material";
 
+/**
+ * Formats a timestamp into a readable date and time format.
+ *
+ * @function formatStamp
+ * @param {number} stamp - The timestamp to format.
+ * @returns {Object} - An object containing the formatted date and time.
+ */
 const formatStamp = (stamp) => {
     const date = new Date(stamp);
 
@@ -25,23 +33,41 @@ const formatStamp = (stamp) => {
     return { formattedDate, formattedTime };
 }
 
+/**
+ * NotificationModal component
+ *
+ * This component renders a modal displaying a list of notifications. Each notification can either be
+ * acknowledged and removed or can be used to add a contact if it's a contact request.
+ *
+ * @component
+ * @param {Object} props - The props that are passed to the component.
+ * @param {boolean} props.modalOpen - Controls the visibility of the modal.
+ * @param {Function} props.toggleModal - Function to toggle the modal's visibility.
+ * @returns {JSX.Element} The NotificationModal component.
+ */
 const NotificationModal = ({ modalOpen, toggleModal }) => {
-    const notifications = useSelector(state => state.xmpp.notifications);
-    const roster = useSelector(state => state.xmpp.roster);
+    const notifications = useSelector(state => state.xmpp.notifications); // Notifications from Redux store
+    const roster = useSelector(state => state.xmpp.roster); // Roster from Redux store
     const dispatch = useDispatch();
-  
+
+    /**
+     * Handles the acknowledgment of a notification. If the notification is a contact request,
+     * it adds the contact; otherwise, it just removes the notification.
+     *
+     * @function handleNotificationAcknowledge
+     * @param {number} index - The index of the notification in the list.
+     * @param {string} type - The type of action to perform ('add' for adding a contact, 'close' for just closing).
+     */
     const handleNotificationAcknowledge = (index, type) => {
-        
         if (type === 'add') {
             dispatch(addContact(notifications[index].from.split('@')[0], 'subscribed'));
         }
 
         dispatch(removeNotification(index));
-
     };
-  
+
     return (
-      <Modal open={modalOpen} onClose={toggleModal}>
+        <Modal open={modalOpen} onClose={toggleModal}>
             <Box
                 position="absolute"
                 right="35%"
@@ -59,7 +85,7 @@ const NotificationModal = ({ modalOpen, toggleModal }) => {
                 flexDirection="column"
             >
                 {notifications.filter(s => s.type === 'contact') && notifications.map((notification, index) => {
-                    if ( notification.type === 'contact' ) {
+                    if (notification.type === 'contact') {
                         let { formattedDate, formattedTime } = formatStamp(notification.date);
                         return (
                             <Box display="flex" borderTop={index === 0 ? "" : "1px solid rgba(255, 255, 255, 0.1)"} p="0 1.5rem" justifyContent="space-between" key={index}>
@@ -89,4 +115,3 @@ const NotificationModal = ({ modalOpen, toggleModal }) => {
 };
 
 export default NotificationModal;
-  

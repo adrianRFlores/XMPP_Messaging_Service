@@ -104,8 +104,6 @@ const xmppMiddleware = store => next => action => {
 
             clientObj.on('stanza', async (stanza) => {
                 
-                console.log(stanza);
-
                 if (stanza.is('iq') && stanza.attrs.id === 'gc1') {
                     let groupchats = [];
 

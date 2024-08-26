@@ -1,8 +1,9 @@
+// JSDoc made by ChatGPT
+
 import {
     Box,
     Typography,
     useTheme,
-    useMediaQuery,
     Modal,
     TextField,
     Button,
@@ -11,19 +12,20 @@ import {
     FormControl,
     InputLabel,
 } from "@mui/material";
-import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { updateUserDetails } from "../redux/actions";
 
+// Options for user status in the form
 const stateOptions = [
-    {display: 'Online', value: 'chat'},
-    {display: 'Away', value: 'away'},
-    {display: 'Extended Away', value: 'xa'},
-    {display: 'Do Not Disturb', value: 'dnd'}
+    { display: 'Online', value: 'chat' },
+    { display: 'Away', value: 'away' },
+    { display: 'Extended Away', value: 'xa' },
+    { display: 'Do Not Disturb', value: 'dnd' }
 ];
 
+// Mapping status values to corresponding colors
 const colorMapping = {
     'dnd': 'red',
     'chat': 'green',
@@ -31,22 +33,48 @@ const colorMapping = {
     'away': 'yellow'
 };
 
+/**
+ * StatusModal component
+ * 
+ * A modal component for updating the user's status and presence message. This component
+ * includes a form that allows users to select their status from predefined options and 
+ * enter a custom presence message. The form is validated using Formik and Yup.
+ * 
+ * @component
+ * @param {Object} props - The props that are passed to the component.
+ * @param {boolean} props.modalOpen - A boolean that controls the visibility of the modal.
+ * @param {Function} props.toggleModal - A function to toggle the open/close state of the modal.
+ * @returns {JSX.Element} The StatusModal component.
+ */
 const StatusModal = ({ modalOpen, toggleModal }) => {
     const theme = useTheme();
     const palette = theme.palette;
     const userDetails = useSelector(state => state.xmpp.userDetails);
     const dispatch = useDispatch();
   
+    // Form validation schema using Yup
     const validationSchema = yup.object().shape({
         status: yup.string().required("Status is required"),
         presenceMsg: yup.string().max(100, "Message must be 100 characters or less"),
     });
   
+    /**
+     * Handles form submission
+     * 
+     * @async
+     * @function handleSubmit
+     * @param {Object} values - The form values.
+     * @param {Object} formikHelpers - Helpers provided by Formik.
+     * @param {Function} formikHelpers.setSubmitting - Function to control the submitting state.
+     * @param {Function} formikHelpers.resetForm - Function to reset the form fields.
+     */
     const handleSubmit = async (values, { setSubmitting, resetForm }) => {
         console.log(values);
         
+        // Dispatch the action to update user details
         dispatch(updateUserDetails(values.status, values.presenceMsg));
 
+        // Reset form and close the modal
         setSubmitting(false);
         resetForm();
         toggleModal();
@@ -81,8 +109,6 @@ const StatusModal = ({ modalOpen, toggleModal }) => {
                 handleBlur,
                 handleChange,
                 handleSubmit,
-                setFieldValue,
-                resetForm,
             }) => (
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
                     <Box
@@ -152,4 +178,3 @@ const StatusModal = ({ modalOpen, toggleModal }) => {
 };
 
 export default StatusModal;
-  
